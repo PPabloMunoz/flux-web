@@ -1,0 +1,26 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  valueId: string;
+  iconClass: string;
+  iconColorClass?: string;
+  changeBadgeId: string;
+}
+
+const { title, valueId, iconClass, iconColorClass = "text-[#8a8f98]", changeBadgeId } = Astro.props;
+---
+
+<div class="glass-card p-6">
+    <div class="flex items-center justify-between mb-4">
+        <span class="text-[12px] font-[510] text-[#8a8f98] uppercase tracking-wider">{title}</span>
+        <div class="w-8 h-8 flex items-center justify-center bg-[rgba(255,255,255,0.03)] rounded-full border border-[rgba(255,255,255,0.08)]">
+            <i class={`fas ${iconClass} text-[12px] ${iconColorClass}`}></i>
+        </div>
+    </div>
+    <div class="text-[32px] font-[510] tracking-tight text-[#f7f8f8]" id={valueId}>$0.00</div>
+    <div class="mt-4 flex items-center">
+        <span class="badge-pill" id={changeBadgeId}>0%</span>
+        <span class="text-[13px] text-[#62666d] ml-2">vs last month</span>
+    </div>
+</div>

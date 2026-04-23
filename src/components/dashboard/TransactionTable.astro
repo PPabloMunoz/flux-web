@@ -1,0 +1,33 @@
+---
+---
+<section class="glass-card overflow-hidden">
+    <div class="p-8 border-b border-[rgba(255,255,255,0.08)] flex justify-between items-center">
+        <div>
+            <h2 class="text-[20px] font-[510] tracking-tight text-[#f7f8f8]">Recent Transactions</h2>
+            <p class="text-[14px] text-[#8a8f98] mt-1">A summary of your latest financial activity.</p>
+        </div>
+        <a href="/transactions" class="text-[13px] font-[510] text-[#d0d6e0] hover:text-[#f7f8f8] transition-colors">View All</a>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-[rgba(255,255,255,0.05)]">
+                    <th class="px-6 py-4 text-[11px] font-[510] text-[#62666d] uppercase tracking-wider">Description</th>
+                    <th class="px-6 py-4 text-[11px] font-[510] text-[#62666d] uppercase tracking-wider">Account</th>
+                    <th class="px-6 py-4 text-[11px] font-[510] text-[#62666d] uppercase tracking-wider">Category</th>
+                    <th class="px-6 py-4 text-[11px] font-[510] text-[#62666d] uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-4 text-[11px] font-[510] text-[#62666d] uppercase tracking-wider text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody id="transaction-rows">
+                <!-- Shimmer Loading State -->
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-[#8a8f98]">
+                        <span>Fetching your latest activity...</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
