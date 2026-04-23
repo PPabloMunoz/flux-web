@@ -123,6 +123,8 @@ import Layout from "../layouts/Layout.astro";
         const deleteBtn = document.getElementById('delete-transaction-btn');
 
         async function fetchInitialData() {
+            if(accounts.length != 0 && categories.length != 0) return
+
             try {
                 const [accRes, catRes] = await Promise.all([
                     fetch(`${API_URL}/account`, { credentials: 'include' }),
