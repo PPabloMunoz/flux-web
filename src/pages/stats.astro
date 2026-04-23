@@ -125,6 +125,8 @@ import Layout from "../layouts/Layout.astro";
         import { fetchStats } from "../services/api";
         import { formatCurrency } from "../utils/formatters";
 
+        // In-memory cache
+        let statsCache: StatsData | null = null;
         const tooltip = document.getElementById('chart-tooltip');
 
         function showTooltip(e: MouseEvent, content: string) {
@@ -148,8 +150,14 @@ import Layout from "../layouts/Layout.astro";
         }
 
         async function loadStats() {
+            if (statsCache) {
+                renderStats(statsCache);
+                return;
+            }
+
             try {
                 const data = await fetchStats();
+                statsCache = data;
                 renderStats(data);
             } catch (error) {
                 if (error instanceof Error && error.message === 'Unauthorized') {
