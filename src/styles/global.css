@@ -83,6 +83,14 @@
     @apply text-[48px] leading-[1.0] font-[510];
     letter-spacing: -1.056px;
   }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @keyframes shimmer {
