@@ -283,6 +283,8 @@ import Layout from "../layouts/Layout.astro";
 
         async function saveAccount(e: SubmitEvent) {
             e.preventDefault();
+            const { form } = getElements();
+            if (!form) return;
             const formData = new FormData(form);
             const id = formData.get('id');
             const data = {
