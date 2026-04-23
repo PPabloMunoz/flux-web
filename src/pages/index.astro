@@ -128,12 +128,19 @@ import Layout from "../layouts/Layout.astro";
                                 placeholder="0.00" />
                         </div>
                         <div>
-                            <label for="type" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Type</label>
-                            <select id="type" name="type" required
-                                class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors">
-                                <option value="expense">Expense</option>
-                                <option value="income">Income</option>
-                            </select>
+                            <label class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Type</label>
+                            <div class="flex gap-4 items-center h-[42px]">
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="radio" name="type" value="expense" class="hidden peer" required>
+                                    <div class="w-4 h-4 rounded-full border border-[rgba(255,255,255,0.2)] peer-checked:border-[#5e6ad2] peer-checked:border-[5px] transition-all"></div>
+                                    <span class="text-[14px] text-[#8a8f98] group-hover:text-[#f7f8f8] transition-colors">Expense</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="radio" name="type" value="income" class="hidden peer">
+                                    <div class="w-4 h-4 rounded-full border border-[rgba(255,255,255,0.2)] peer-checked:border-[#10b981] peer-checked:border-[5px] transition-all"></div>
+                                    <span class="text-[14px] text-[#8a8f98] group-hover:text-[#f7f8f8] transition-colors">Income</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -145,15 +152,21 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                     <div>
                         <label for="category_id" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Category</label>
-                        <select id="category_id" name="category_id" required
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors">
-                            <option value="">Select Category</option>
+                        <select id="category_id" name="category_id" required disabled
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <option value="">Select a type first</option>
                         </select>
                     </div>
                     <div>
                         <label for="date" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Date</label>
                         <input type="date" id="date" name="date" required
                             class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors" />
+                    </div>
+                    <div>
+                        <label for="notes" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Notes</label>
+                        <textarea id="notes" name="notes" rows="3"
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors resize-none"
+                            placeholder="Add additional details..."></textarea>
                     </div>
                     <div class="pt-4 flex gap-3 justify-end">
                         <button type="button" id="cancel-modal" class="btn-secondary">Cancel</button>
@@ -207,20 +220,43 @@ import Layout from "../layouts/Layout.astro";
 
         function populateSelects() {
             const accSelect = document.getElementById('account_id') as HTMLSelectElement;
-            const catSelect = document.getElementById('category_id') as HTMLSelectElement;
-
-            if (!accSelect || !catSelect) return;
+            if (!accSelect) return;
 
             accSelect.innerHTML = '<option value="">Select Account</option>';
             accounts.forEach(acc => {
                 const opt = document.createElement('option');
                 opt.value = acc.id.toString();
-                opt.textContent = `${acc.name} (ID: ${acc.id})`;
+                opt.textContent = `${acc.name}`;
                 accSelect.appendChild(opt);
             });
 
+            // Initial category setup
+            updateCategorySelect();
+        }
+
+        function updateCategorySelect() {
+            const catSelect = document.getElementById('category_id') as HTMLSelectElement;
+            const typeRadios = document.getElementsByName('type') as NodeListOf<HTMLInputElement>;
+            let selectedType = "";
+            
+            typeRadios.forEach(r => {
+                if (r.checked) selectedType = r.value;
+            });
+
+            if (!catSelect) return;
+
+            if (!selectedType) {
+                catSelect.innerHTML = '<option value="">Select a type first</option>';
+                catSelect.disabled = true;
+                return;
+            }
+
+            catSelect.disabled = false;
             catSelect.innerHTML = '<option value="">Select Category</option>';
-            categories.forEach(cat => {
+            
+            const filteredCategories = categories.filter(cat => cat.type === selectedType);
+            
+            filteredCategories.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat.id.toString();
                 opt.textContent = cat.name;
@@ -233,6 +269,7 @@ import Layout from "../layouts/Layout.astro";
 
             form.reset();
             (document.getElementById('date') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
+            updateCategorySelect();
             
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -254,7 +291,8 @@ import Layout from "../layouts/Layout.astro";
                 type: formData.get('type'),
                 date: (formData.get('date') as string),
                 account_id: parseInt(formData.get('account_id') as string),
-                category_id: parseInt(formData.get('category_id') as string)
+                category_id: parseInt(formData.get('category_id') as string),
+                notes: formData.get('notes')
             };
 
             try {
@@ -426,6 +464,11 @@ import Layout from "../layouts/Layout.astro";
             document.getElementById('close-modal')?.addEventListener('click', closeModal);
             document.getElementById('cancel-modal')?.addEventListener('click', closeModal);
             document.getElementById('transaction-form')?.addEventListener('submit', saveTransaction);
+            
+            // Add event listeners for type radio buttons
+            document.getElementsByName('type').forEach(radio => {
+                radio.addEventListener('change', updateCategorySelect);
+            });
         });
     </script>
 </Layout>
