@@ -1,0 +1,120 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Accounts">
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Header -->
+        <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <h1 class="display-lg text-[#f7f8f8]">Accounts</h1>
+                <p class="text-[18px] text-[#8a8f98] mt-2 font-[400]">Manage your financial institutions and wallets in one place.</p>
+            </div>
+            <div class="flex gap-3">
+                <button class="btn-secondary">
+                    Manage Groups
+                </button>
+                <button class="btn-primary">
+                    <i class="fas fa-plus mr-2 text-[10px]"></i> Add Account
+                </button>
+            </div>
+        </header>
+
+        <!-- Accounts Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="accounts-grid">
+            <!-- Loading State -->
+            <div class="col-span-full py-24 text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#5e6ad2] mb-4"></div>
+                <p class="text-[#8a8f98] font-[510]">Loading accounts...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = import.meta.env.PUBLIC_API_URL; 
+
+        const mockAccounts = [
+            { id: 1, name: 'Main Checking', institution: 'Chase Bank', type: 'Checking', balance: 5420.50, color: '#3b82f6', lastSync: '2 mins ago' },
+            { id: 2, name: 'Savings Fund', institution: 'Ally Bank', type: 'Savings', balance: 12450.00, color: '#10b981', lastSync: '1 hour ago' },
+            { id: 3, name: 'Crypto Wallet', institution: 'Coinbase', type: 'Investment', balance: 3210.75, color: '#f59e0b', lastSync: 'Just now' },
+            { id: 4, name: 'Travel Card', institution: 'American Express', type: 'Credit', balance: -450.20, color: '#6366f1', lastSync: '5 mins ago' }
+        ];
+
+        function renderAccounts(accounts) {
+            const grid = document.getElementById('accounts-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+
+            accounts.forEach(acc => {
+                const card = document.createElement('div');
+                card.className = 'glass-card p-6 flex flex-col hover:border-[rgba(255,255,255,0.15)] transition-all group cursor-pointer';
+                
+                const isNegative = acc.balance < 0;
+                const formattedBalance = new Intl.NumberFormat('en-US', { 
+                    style: 'currency', 
+                    currency: 'USD' 
+                }).format(Math.abs(acc.balance));
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)]">
+                                <i class="fas ${getIcon(acc.type)} text-[14px] text-[#d0d6e0]"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-[16px] font-[510] text-[#f7f8f8] group-hover:text-[#828fff] transition-colors">${acc.name}</h3>
+                                <p class="text-[12px] text-[#62666d]">${acc.institution}</p>
+                            </div>
+                        </div>
+                        <span class="badge-pill bg-[rgba(255,255,255,0.03)] text-[10px]">${acc.type}</span>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <div class="text-[24px] font-[510] tracking-tight ${isNegative ? 'text-rose-500' : 'text-[#f7f8f8]'}">
+                            ${isNegative ? '-' : ''}${formattedBalance}
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-4 border-t border-[rgba(255,255,255,0.05)]">
+                            <span class="text-[11px] text-[#62666d]">Last synced ${acc.lastSync}</span>
+                            <i class="fas fa-chevron-right text-[10px] text-[#3e3e44] group-hover:text-[#8a8f98] transition-colors"></i>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function getIcon(type) {
+            switch(type.toLowerCase()) {
+                case 'checking': return 'fa-university';
+                case 'savings': return 'fa-piggy-bank';
+                case 'investment': return 'fa-chart-line';
+                case 'credit': return 'fa-credit-card';
+                default: return 'fa-wallet';
+            }
+        }
+
+        async function init() {
+            try {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                const response = await fetch(`${API_URL}/accounts`, {
+                    credentials: 'include'
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                renderAccounts(mockAccounts);
+            } catch (error) {
+                console.error('Fetch error:', error);
+                renderAccounts(mockAccounts); // Fallback to mock
+            }
+        }
+
+        init();
+    </script>
+</Layout>

@@ -1,0 +1,123 @@
+---
+import "../styles/global.css";
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceFlow | {title}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="text-foreground bg-[#08090a]">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 w-full bg-[#0f1011] border-b border-[rgba(255,255,255,0.05)]">
+        <!-- Level 1: Brand & User -->
+        <div class="px-6 py-3 border-b border-[rgba(255,255,255,0.03)]">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="bg-[#5e6ad2] p-1.5 rounded-md">
+                        <i class="fas fa-wallet text-white text-sm"></i>
+                    </div>
+                    <span class="text-lg font-[510] tracking-tight text-[#f7f8f8]">FinanceFlow</span>
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-3 border-r border-[rgba(255,255,255,0.08)] pr-6">
+                        <div class="h-7 w-7 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center border border-[rgba(255,255,255,0.08)]">
+                            <span class="text-[10px] font-bold text-[#d0d6e0]">JD</span>
+                        </div>
+                        <span class="hidden sm:inline text-[13px] font-[510] text-[#8a8f98]">John Doe</span>
+                    </div>
+                    
+                    <button id="logout-btn" class="flex items-center gap-2 text-[#8a8f98] hover:text-[#f7f8f8] transition-colors">
+                        <span class="text-[13px] font-[510]">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level 2: App Navigation -->
+        <div class="px-6 py-2 bg-[#0f1011]">
+            <div class="max-w-7xl mx-auto flex items-center gap-1">
+                <a href="/" class="nav-link" id="nav-dashboard">
+                    Dashboard
+                </a>
+                <a href="/accounts" class="nav-link" id="nav-accounts">
+                    Accounts
+                </a>
+                <a href="/stats" class="nav-link" id="nav-stats">
+                    Stats
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <slot />
+
+    <script>
+        // Handle Active Navigation Link
+        const currentPath = window.location.pathname;
+        const navLinks = {
+            '/': 'nav-dashboard',
+            '/accounts': 'nav-accounts',
+            '/stats': 'nav-stats'
+        };
+
+        const activeId = navLinks[currentPath as keyof typeof navLinks];
+        if (activeId) {
+            const activeLink = document.getElementById(activeId);
+            if (activeLink) {
+                activeLink.classList.add('nav-link-active');
+            }
+        }
+
+        // Auth check - verifies session with backend
+        const API_URL = import.meta.env.PUBLIC_API_URL;
+        
+        async function checkAuth() {
+            if (currentPath === '/login' || currentPath === '/register') return;
+            
+            try {
+                const response = await fetch(`${API_URL}/me`, { 
+                    method: 'GET',
+                    credentials: 'include' 
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        checkAuth();
+
+        // Logout logic
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    await fetch(`${API_URL}/auth/logout`, { 
+                        method: 'POST',
+                        credentials: 'include' 
+                    });
+                } catch (e) {
+                    console.error('Logout error:', e);
+                }
+                window.location.href = '/login';
+            });
+        }
+    </script>
+</body>
+</html>
