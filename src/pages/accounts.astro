@@ -65,20 +65,24 @@ import Layout from "../layouts/Layout.astro";
     </div>
 
     <script>
+        import type { Account } from "../types/account";
+
         const API_URL = import.meta.env.PUBLIC_API_URL; 
 
         // In-memory cache
-        let accountsCache = null;
+        let accountsCache: Account[] | null = null;
 
         const modal = document.getElementById('account-modal');
         const form = document.getElementById('account-form') as HTMLFormElement;
         const modalTitle = document.getElementById('modal-title');
         const deleteBtn = document.getElementById('delete-account-btn');
 
-        function openModal(account = null) {
+        function openModal(account: Account | null = null) {
+            if (!modal || !modalTitle || !deleteBtn) return;
+
             if (account) {
                 modalTitle.textContent = 'Edit Account';
-                (document.getElementById('account-id') as HTMLInputElement).value = account.id;
+                (document.getElementById('account-id') as HTMLInputElement).value = account.id.toString();
                 (document.getElementById('name') as HTMLInputElement).value = account.name;
                 (document.getElementById('balance') as HTMLInputElement).value = (account.balance / 100).toString();
                 deleteBtn.classList.remove('hidden');
@@ -93,11 +97,13 @@ import Layout from "../layouts/Layout.astro";
         }
 
         function closeModal() {
-            modal.classList.add('hidden');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
             document.body.style.overflow = '';
         }
 
-        async function saveAccount(e) {
+        async function saveAccount(e: SubmitEvent) {
             e.preventDefault();
             const formData = new FormData(form);
             const id = formData.get('id');
@@ -150,7 +156,7 @@ import Layout from "../layouts/Layout.astro";
             }
         }
 
-        function renderAccounts(accounts) {
+        function renderAccounts(accounts: Account[]) {
             const grid = document.getElementById('accounts-grid');
             if (!grid) return;
             
@@ -161,7 +167,7 @@ import Layout from "../layouts/Layout.astro";
                 currency: 'EUR' 
             });
 
-            accounts.forEach(acc => {
+            accounts.forEach((acc: Account) => {
                 const card = document.createElement('div');
                 card.className = 'glass-card p-6 flex flex-col hover:border-[rgba(255,255,255,0.15)] transition-all group cursor-pointer';
                 card.onclick = () => openModal(acc);
@@ -199,7 +205,7 @@ import Layout from "../layouts/Layout.astro";
             });
         }
 
-        function getIcon(name) {
+        function getIcon(name: string) {
             const n = name.toLowerCase();
             if (n.includes('savings')) return 'fa-piggy-bank';
             if (n.includes('checking')) return 'fa-university';
@@ -211,7 +217,7 @@ import Layout from "../layouts/Layout.astro";
         async function init() {
             if (accountsCache) {
                 renderAccounts(accountsCache);
-                return; // STOP HERE if we have data
+                return;
             }
 
             try {
@@ -226,9 +232,9 @@ import Layout from "../layouts/Layout.astro";
 
                 if (!response.ok) throw new Error('Failed to fetch accounts');
 
-                const accounts = await response.json();
-                accountsCache = accounts;
-                renderAccounts(accounts);
+                const accountsData: Account[] = await response.json();
+                accountsCache = accountsData;
+                renderAccounts(accountsData);
             } catch (error) {
                 console.error('Fetch error:', error);
                 const grid = document.getElementById('accounts-grid');

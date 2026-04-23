@@ -78,19 +78,23 @@ import Layout from "../layouts/Layout.astro";
     </div>
 
     <script>
+        import type { Category } from "../types/category";
+
         const API_URL = import.meta.env.PUBLIC_API_URL; 
 
-        let categoriesCache = null;
+        let categoriesCache: Category[] | null = null;
 
         const modal = document.getElementById('category-modal');
         const form = document.getElementById('category-form') as HTMLFormElement;
         const modalTitle = document.getElementById('modal-title');
         const deleteBtn = document.getElementById('delete-category-btn');
 
-        function openModal(category = null) {
+        function openModal(category: Category | null = null) {
+            if (!modal || !modalTitle || !deleteBtn) return;
+
             if (category) {
                 modalTitle.textContent = 'Edit Category';
-                (document.getElementById('category-id') as HTMLInputElement).value = category.id;
+                (document.getElementById('category-id') as HTMLInputElement).value = category.id.toString();
                 (document.getElementById('name') as HTMLInputElement).value = category.name;
                 (document.getElementById('type') as HTMLSelectElement).value = category.type;
                 (document.getElementById('color') as HTMLInputElement).value = category.color;
@@ -109,11 +113,13 @@ import Layout from "../layouts/Layout.astro";
         }
 
         function closeModal() {
-            modal.classList.add('hidden');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
             document.body.style.overflow = '';
         }
 
-        async function saveCategory(e) {
+        async function saveCategory(e: SubmitEvent) {
             e.preventDefault();
             const formData = new FormData(form);
             const id = formData.get('id');
@@ -166,18 +172,18 @@ import Layout from "../layouts/Layout.astro";
             }
         }
 
-        function renderCategories(categories) {
+        function renderCategories(categories: Category[]) {
             const grid = document.getElementById('categories-grid');
             if (!grid) return;
             
             grid.innerHTML = '';
 
-            const typeIcons = {
+            const typeIcons: Record<string, string> = {
                 expense: 'fa-arrow-down',
                 income: 'fa-arrow-up'
             };
 
-            categories.forEach(cat => {
+            categories.forEach((cat: Category) => {
                 const card = document.createElement('div');
                 card.className = 'glass-card p-6 flex flex-col hover:border-[rgba(255,255,255,0.15)] transition-all group cursor-pointer';
                 card.onclick = () => openModal(cat);
@@ -224,9 +230,9 @@ import Layout from "../layouts/Layout.astro";
 
                 if (!response.ok) throw new Error('Failed to fetch categories');
 
-                const categories = await response.json();
-                categoriesCache = categories;
-                renderCategories(categories);
+                const categoriesData: Category[] = await response.json();
+                categoriesCache = categoriesData;
+                renderCategories(categoriesData);
             } catch (error) {
                 console.error('Fetch error:', error);
                 const grid = document.getElementById('categories-grid');

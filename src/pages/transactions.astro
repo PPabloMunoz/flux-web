@@ -111,11 +111,15 @@ import Layout from "../layouts/Layout.astro";
     </div>
 
     <script>
+        import type { Transaction } from "../types/dashboard";
+        import type { Account } from "../types/account";
+        import type { Category } from "../types/category";
+
         const API_URL = import.meta.env.PUBLIC_API_URL; 
 
-        let transactionsCache = null;
-        let accounts = [];
-        let categories = [];
+        let transactionsCache: Transaction[] | null = null;
+        let accounts: Account[] = [];
+        let categories: Category[] = [];
 
         const modal = document.getElementById('transaction-modal');
         const form = document.getElementById('transaction-form') as HTMLFormElement;
@@ -149,10 +153,12 @@ import Layout from "../layouts/Layout.astro";
             const accSelect = document.getElementById('account_id') as HTMLSelectElement;
             const catSelect = document.getElementById('category_id') as HTMLSelectElement;
 
+            if (!accSelect || !catSelect) return;
+
             accSelect.innerHTML = '<option value="">Select Account</option>';
             accounts.forEach(acc => {
                 const opt = document.createElement('option');
-                opt.value = acc.id;
+                opt.value = acc.id.toString();
                 opt.textContent = `${acc.name} (ID: ${acc.id})`;
                 accSelect.appendChild(opt);
             });
@@ -160,21 +166,23 @@ import Layout from "../layouts/Layout.astro";
             catSelect.innerHTML = '<option value="">Select Category</option>';
             categories.forEach(cat => {
                 const opt = document.createElement('option');
-                opt.value = cat.id;
+                opt.value = cat.id.toString();
                 opt.textContent = cat.name;
                 catSelect.appendChild(opt);
             });
         }
 
-        function openModal(tx = null) {
+        function openModal(tx: Transaction | null = null) {
+            if (!modal || !modalTitle || !deleteBtn) return;
+
             if (tx) {
                 modalTitle.textContent = 'Edit Transaction';
-                (document.getElementById('transaction-id') as HTMLInputElement).value = tx.id;
+                (document.getElementById('transaction-id') as HTMLInputElement).value = tx.id.toString();
                 (document.getElementById('title') as HTMLInputElement).value = tx.title;
                 (document.getElementById('amount') as HTMLInputElement).value = (tx.amount / 100).toString();
                 (document.getElementById('type') as HTMLSelectElement).value = tx.type;
-                (document.getElementById('account_id') as HTMLSelectElement).value = tx.account_id;
-                (document.getElementById('category_id') as HTMLSelectElement).value = tx.category_id;
+                (document.getElementById('account_id') as HTMLSelectElement).value = tx.account_id.toString();
+                (document.getElementById('category_id') as HTMLSelectElement).value = tx.category_id.toString();
                 (document.getElementById('date') as HTMLInputElement).value = tx.date.split('T')[0];
                 deleteBtn.classList.remove('hidden');
             } else {
@@ -189,11 +197,13 @@ import Layout from "../layouts/Layout.astro";
         }
 
         function closeModal() {
-            modal.classList.add('hidden');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
             document.body.style.overflow = '';
         }
 
-        async function saveTransaction(e) {
+        async function saveTransaction(e: SubmitEvent) {
             e.preventDefault();
             const formData = new FormData(form);
             const id = formData.get('id');
@@ -252,7 +262,7 @@ import Layout from "../layouts/Layout.astro";
             }
         }
 
-        function renderTransactions(transactions) {
+        function renderTransactions(transactions: Transaction[]) {
             const rowsContainer = document.getElementById('transaction-rows');
             if (!rowsContainer) return;
             
@@ -268,7 +278,7 @@ import Layout from "../layouts/Layout.astro";
                 return;
             }
 
-            transactions.forEach(tx => {
+            transactions.forEach((tx: Transaction) => {
                 const isIncome = tx.type === 'income';
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-[rgba(255,255,255,0.02)] transition-colors group cursor-pointer border-b border-[rgba(255,255,255,0.03)]';
@@ -330,9 +340,9 @@ import Layout from "../layouts/Layout.astro";
 
                 if (!response.ok) throw new Error('Failed to fetch transactions');
 
-                const transactions = await response.json();
-                transactionsCache = transactions;
-                renderTransactions(transactions);
+                const transactionsData: Transaction[] = await response.json();
+                transactionsCache = transactionsData;
+                renderTransactions(transactionsData);
             } catch (error) {
                 console.error('Fetch error:', error);
                 const rowsContainer = document.getElementById('transaction-rows');
