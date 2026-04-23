@@ -31,8 +31,8 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                 </div>
                 <div class="text-[32px] font-[510] tracking-tight text-[#f7f8f8]" id="total-balance">$0.00</div>
-                <div class="mt-4 flex items-center">
-                    <span class="badge-pill bg-[rgba(16,185,129,0.1)] text-[#10b981] border-none mr-2">+2.4%</span>
+                <div class="mt-4 flex items-center" id="balance-change-container">
+                    <span class="badge-pill" id="balance-change-badge">0%</span>
                     <span class="text-[13px] text-[#62666d]">vs last month</span>
                 </div>
             </div>
@@ -46,9 +46,9 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                 </div>
                 <div class="text-[32px] font-[510] tracking-tight text-[#f7f8f8]" id="monthly-income">$0.00</div>
-                <div class="mt-4 flex items-center">
-                    <span class="badge-pill bg-[rgba(16,185,129,0.1)] text-[#10b981] border-none mr-2">+12%</span>
-                    <span class="text-[13px] text-[#62666d]">from salaries</span>
+                <div class="mt-4 flex items-center" id="income-change-container">
+                    <span class="badge-pill" id="income-change-badge">0%</span>
+                    <span class="text-[13px] text-[#62666d]">vs last month</span>
                 </div>
             </div>
 
@@ -61,8 +61,9 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                 </div>
                 <div class="text-[32px] font-[510] tracking-tight text-[#f7f8f8]" id="monthly-expenses">$0.00</div>
-                <div class="mt-4 flex items-center">
-                    <span class="text-[13px] text-[#62666d]">Increased by 4.2%</span>
+                <div class="mt-4 flex items-center" id="expenses-change-container">
+                    <span class="badge-pill" id="expenses-change-badge">0%</span>
+                    <span class="text-[13px] text-[#62666d]">vs last month</span>
                 </div>
             </div>
         </section>
@@ -74,7 +75,7 @@ import Layout from "../layouts/Layout.astro";
                     <h2 class="text-[20px] font-[510] tracking-tight text-[#f7f8f8]">Recent Transactions</h2>
                     <p class="text-[14px] text-[#8a8f98] mt-1">A summary of your latest financial activity.</p>
                 </div>
-                <a href="#" class="text-[13px] font-[510] text-[#d0d6e0] hover:text-[#f7f8f8] transition-colors">View All</a>
+                <a href="/transactions" class="text-[13px] font-[510] text-[#d0d6e0] hover:text-[#f7f8f8] transition-colors">View All</a>
             </div>
             
             <div class="overflow-x-auto">
@@ -128,6 +129,35 @@ import Layout from "../layouts/Layout.astro";
             if(balanceEl) balanceEl.textContent = format(data.total_balance);
             if(incomeEl) incomeEl.textContent = format(data.monthly_income);
             if(expenseEl) expenseEl.textContent = format(data.monthly_expenses);
+
+            // Update Percentages
+            const updatePercentage = (id, value, invertColors = false) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                
+                const val = value || 0;
+                const isPositive = val > 0;
+                const isZero = val === 0;
+                
+                el.textContent = `${isPositive ? '+' : ''}${val.toFixed(1)}%`;
+                
+                // Determine colors
+                let colorClass = 'bg-[rgba(255,255,255,0.05)] text-[#8a8f98]'; // neutral/zero
+                if (!isZero) {
+                    const positiveIsGood = !invertColors;
+                    if (isPositive === positiveIsGood) {
+                        colorClass = 'bg-[rgba(16,185,129,0.1)] text-[#10b981]'; // Green
+                    } else {
+                        colorClass = 'bg-[rgba(248,113,113,0.1)] text-[#f87171]'; // Red
+                    }
+                }
+                
+                el.className = `badge-pill border-none mr-2 ${colorClass}`;
+            };
+
+            updatePercentage('balance-change-badge', data.total_balance_change_pct);
+            updatePercentage('income-change-badge', data.monthly_income_change_pct);
+            updatePercentage('expenses-change-badge', data.monthly_expenses_change_pct, true);
 
             // Update Transactions
             const rowsContainer = document.getElementById('transaction-rows');
