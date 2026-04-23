@@ -12,6 +12,7 @@
                 </button>
             </div>
             <form id="transaction-form" class="p-6 space-y-4">
+                <input type="hidden" id="transaction-id" name="id" />
                 <div>
                     <label for="title" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Description</label>
                     <input type="text" id="title" name="title" required
@@ -82,7 +83,10 @@
                         class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors resize-none"
                         placeholder="Add additional details..."></textarea>
                 </div>
-                <div class="pt-4 flex gap-3 justify-end">
+                <div class="pt-4 flex gap-3">
+                    <button type="button" id="delete-transaction-btn" class="hidden px-4 py-2 text-rose-500 hover:bg-rose-500/10 rounded-md text-sm font-[510] transition-colors mr-auto">
+                        Delete
+                    </button>
                     <button type="button" id="cancel-modal" class="btn-secondary">Cancel</button>
                     <button type="submit" class="btn-primary">Save Transaction</button>
                 </div>

@@ -68,6 +68,7 @@ import TransactionModal from "../components/dashboard/TransactionModal.astro";
         let dashboardCache: DashboardData | null = null;
         let accounts: Account[] = [];
         let categories: Category[] = [];
+        let initialDataPromise: Promise<void> | null = null;
 
         type ModalElements = {
             modal: HTMLElement | null;
@@ -140,24 +141,31 @@ import TransactionModal from "../components/dashboard/TransactionModal.astro";
 
         async function ensureInitialDataLoaded() {
             if (accounts.length !== 0 && categories.length !== 0) return;
+            if (initialDataPromise) return initialDataPromise;
 
-            try {
-                const [accData, catData] = await Promise.all([
-                    fetchAccounts(),
-                    fetchCategories()
-                ]);
+            initialDataPromise = (async () => {
+                try {
+                    const [accData, catData] = await Promise.all([
+                        fetchAccounts(),
+                        fetchCategories()
+                    ]);
 
-                accounts = accData;
-                categories = catData;
-                populateSelects();
-            } catch (error) {
-                if (error instanceof Error && error.message === 'Unauthorized') {
-                    window.location.href = '/login';
-                    return;
+                    accounts = accData;
+                    categories = catData;
+                    populateSelects();
+                } catch (error) {
+                    initialDataPromise = null; // Allow retry on failure
+                    if (error instanceof Error && error.message === 'Unauthorized') {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    console.error('Error fetching initial data:', error);
+                    alert('Failed to load accounts and categories. Please try again.');
+                    throw error;
                 }
-                console.error('Error fetching initial data:', error);
-                alert('Failed to load accounts and categories. Please try again.');
-            }
+            })();
+
+            return initialDataPromise;
         }
 
         function populateSelects() {

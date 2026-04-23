@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import TransactionModal from "../components/dashboard/TransactionModal.astro";
 ---
 
 <Layout title="Transactions">
@@ -60,104 +61,14 @@ import Layout from "../layouts/Layout.astro";
     </main>
 
     <!-- Transaction Modal -->
-    <div id="transaction-modal" class="fixed inset-0 z-[100] hidden">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-        <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="glass-card w-full max-w-md bg-[#0f1011] shadow-2xl animate-in fade-in zoom-in duration-200">
-                <div class="p-6 border-b border-[rgba(255,255,255,0.05)] flex items-center justify-between">
-                    <h2 class="text-xl font-[510] text-[#f7f8f8]" id="modal-title">Add Transaction</h2>
-                    <button id="close-modal" class="text-[#8a8f98] hover:text-[#f7f8f8] transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <form id="transaction-form" class="p-6 space-y-4">
-                    <input type="hidden" id="transaction-id" name="id" />
-                    <div>
-                        <label for="title" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Description</label>
-                        <input type="text" id="title" name="title" required
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors"
-                            placeholder="e.g. Weekly Groceries" />
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="amount" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Amount (EUR)</label>
-                            <input type="number" id="amount" name="amount" step="0.01" required
-                                class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors"
-                                placeholder="0.00" />
-                        </div>
-                        <div>
-                            <label class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Type</label>
-                            <div class="flex gap-4 items-center h-[42px]">
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="radio" name="type" value="expense" class="hidden peer" required>
-                                    <div class="w-4 h-4 rounded-full border border-[rgba(255,255,255,0.2)] peer-checked:border-[#5e6ad2] peer-checked:border-[5px] transition-all"></div>
-                                    <span class="text-[14px] text-[#8a8f98] group-hover:text-[#f7f8f8] transition-colors">Expense</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer group">
-                                    <input type="radio" name="type" value="income" class="hidden peer">
-                                    <div class="w-4 h-4 rounded-full border border-[rgba(255,255,255,0.2)] peer-checked:border-[#10b981] peer-checked:border-[5px] transition-all"></div>
-                                    <span class="text-[14px] text-[#8a8f98] group-hover:text-[#f7f8f8] transition-colors">Income</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <label for="account_id" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Account</label>
-                        <input type="hidden" id="account_id" name="account_id" required />
-                        <button type="button" id="account-select-trigger" 
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2.5 text-[#f7f8f8] flex items-center justify-between focus:outline-none focus:border-[#5e6ad2] transition-colors group">
-                            <span id="selected-account-label" class="text-[#8a8f98]">Select Account</span>
-                            <i class="fas fa-chevron-down text-[10px] text-[#62666d] group-hover:text-[#8a8f98] transition-colors"></i>
-                        </button>
-                        
-                        <div id="account-dropdown" class="absolute left-0 right-0 mt-2 bg-[#161718] border border-[rgba(255,255,255,0.08)] rounded-lg shadow-2xl hidden z-50 max-h-60 overflow-y-auto custom-scrollbar">
-                            <div id="account-options" class="p-1.5 space-y-1">
-                                <!-- Options will be injected here -->
-                            </div>
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <label for="category_id" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Category</label>
-                        <input type="hidden" id="category_id" name="category_id" required />
-                        <button type="button" id="category-select-trigger" disabled
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2.5 text-[#f7f8f8] flex items-center justify-between focus:outline-none focus:border-[#5e6ad2] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span id="selected-category-label" class="text-[#8a8f98]">Select a type first</span>
-                            <i class="fas fa-chevron-down text-[10px] text-[#62666d] group-hover:text-[#8a8f98] transition-colors"></i>
-                        </button>
-                        
-                        <div id="category-dropdown" class="absolute left-0 right-0 mt-2 bg-[#161718] border border-[rgba(255,255,255,0.08)] rounded-lg shadow-2xl hidden z-50 max-h-60 overflow-y-auto custom-scrollbar">
-                            <div id="category-options" class="p-1.5 space-y-1">
-                                <!-- Options will be injected here -->
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="date" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Date</label>
-                        <input type="date" id="date" name="date" required
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors" />
-                    </div>
-                    <div>
-                        <label for="notes" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Notes</label>
-                        <textarea id="notes" name="notes" rows="3"
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors resize-none"
-                            placeholder="Add additional details..."></textarea>
-                    </div>
-                    <div class="pt-4 flex gap-3">
-                        <button type="button" id="delete-transaction-btn" class="hidden px-4 py-2 text-rose-500 hover:bg-rose-500/10 rounded-md text-sm font-[510] transition-colors mr-auto">
-                            Delete
-                        </button>
-                        <button type="button" id="cancel-modal" class="btn-secondary">Cancel</button>
-                        <button type="submit" class="btn-primary">Save Transaction</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <TransactionModal />
 
     <script>
         import type { Transaction } from "../types/dashboard";
         import type { Account } from "../types/account";
         import type { Category } from "../types/category";
+
+        import { fetchAccounts, fetchCategories } from "../services/api";
 
         const API_URL = import.meta.env.PUBLIC_API_URL; 
         const PAGE_SIZE = 20;
@@ -166,10 +77,35 @@ import Layout from "../layouts/Layout.astro";
         let totalTransactions = 0;
         let accounts: Account[] = [];
         let categories: Category[] = [];
+        let initialDataPromise: Promise<void> | null = null;
         const transactionCache = new Map<number, { transactions: Transaction[], total: number }>();
 
-        function getModalElements() {
-            return {
+        type ModalElements = {
+            modal: HTMLElement | null;
+            form: HTMLFormElement | null;
+            modalTitle: HTMLElement | null;
+            deleteBtn: HTMLElement | null;
+            addBtn: HTMLElement | null;
+            closeModalBtn: HTMLElement | null;
+            cancelModalBtn: HTMLElement | null;
+            accTrigger: HTMLElement | null;
+            catTrigger: HTMLElement | null;
+            dateInput: HTMLInputElement | null;
+            notesInput: HTMLTextAreaElement | null;
+            accLabel: HTMLElement | null;
+            accInput: HTMLInputElement | null;
+            catLabel: HTMLElement | null;
+            catInput: HTMLInputElement | null;
+            txIdInput: HTMLInputElement | null;
+            titleInput: HTMLInputElement | null;
+            amountInput: HTMLInputElement | null;
+        };
+
+        let cachedModalElements: ModalElements | null = null;
+
+        function getModalElements(): ModalElements {
+            if (cachedModalElements) return cachedModalElements;
+            cachedModalElements = {
                 modal: document.getElementById('transaction-modal'),
                 form: document.getElementById('transaction-form') as HTMLFormElement,
                 modalTitle: document.getElementById('modal-title'),
@@ -189,29 +125,36 @@ import Layout from "../layouts/Layout.astro";
                 titleInput: document.getElementById('title') as HTMLInputElement,
                 amountInput: document.getElementById('amount') as HTMLInputElement
             };
+            return cachedModalElements;
         }
 
-        async function fetchInitialData() {
-            if(accounts.length != 0 && categories.length != 0) return
+        async function ensureInitialDataLoaded() {
+            if (accounts.length !== 0 && categories.length !== 0) return;
+            if (initialDataPromise) return initialDataPromise;
 
-            try {
-                const [accRes, catRes] = await Promise.all([
-                    fetch(`${API_URL}/account`, { credentials: 'include' }),
-                    fetch(`${API_URL}/category`, { credentials: 'include' })
-                ]);
-                
-                if (accRes.status === 401 || catRes.status === 401) {
-                    window.location.href = '/login';
-                    return;
+            initialDataPromise = (async () => {
+                try {
+                    const [accData, catData] = await Promise.all([
+                        fetchAccounts(),
+                        fetchCategories()
+                    ]);
+
+                    accounts = accData;
+                    categories = catData;
+
+                    populateSelects();
+                } catch (error) {
+                    initialDataPromise = null; // Allow retry
+                    if (error instanceof Error && error.message === 'Unauthorized') {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    console.error('Error fetching initial data:', error);
+                    throw error;
                 }
+            })();
 
-                accounts = await accRes.json();
-                categories = await catRes.json();
-
-                populateSelects();
-            } catch (error) {
-                console.error('Error fetching initial data:', error);
-            }
+            return initialDataPromise;
         }
 
         function populateSelects() {
@@ -263,11 +206,7 @@ import Layout from "../layouts/Layout.astro";
             const categoryDropdown = document.getElementById('category-dropdown');
 
             const typeRadios = document.getElementsByName('type') as NodeListOf<HTMLInputElement>;
-            let selectedType = "";
-            
-            typeRadios.forEach(r => {
-                if (r.checked) selectedType = r.value;
-            });
+            const selectedType = Array.from(typeRadios).find(r => r.checked)?.value ?? "";
 
             if (!categoryOptions || !selectedLabel || !categoryIdInput || !categoryTrigger || !categoryDropdown) return;
 
@@ -323,7 +262,7 @@ import Layout from "../layouts/Layout.astro";
             });
         }
 
-        function openModal(tx: Transaction | null = null) {
+        async function openModal(tx: Transaction | null = null) {
             const { 
                 modal, modalTitle, deleteBtn, form, txIdInput, titleInput, 
                 amountInput, dateInput, notesInput, accLabel, accInput, 
@@ -331,6 +270,8 @@ import Layout from "../layouts/Layout.astro";
             } = getModalElements();
             
             if (!modal || !modalTitle || !deleteBtn || !form) return;
+
+            await ensureInitialDataLoaded();
 
             if (tx) {
                 modalTitle.textContent = 'Edit Transaction';
@@ -511,6 +452,8 @@ import Layout from "../layouts/Layout.astro";
                 return;
             }
 
+            const fragment = document.createDocumentFragment();
+
             transactions.forEach((tx: Transaction) => {
                 const isIncome = tx.type === 'income';
                 const row = document.createElement('tr');
@@ -519,8 +462,8 @@ import Layout from "../layouts/Layout.astro";
                 
                 const displayDate = new Date(tx.date).toLocaleDateString('es-ES');
                 const accountName = tx.account_name || 'Unknown';
-                const categoryName = categories.find(c => c.id === tx.category_id)?.name || 'Uncategorized';
-                const categoryColor = categories.find(c => c.id === tx.category_id)?.color || '#8a8f98';
+                const categoryName = tx.category_name || 'Uncategorized';
+                const categoryColor = tx.category_color || '#8a8f98';
 
                 row.innerHTML = `
                     <td class="px-6 py-4">
@@ -551,17 +494,18 @@ import Layout from "../layouts/Layout.astro";
                         </span>
                     </td>
                 `;
-                rowsContainer.appendChild(row);
+                fragment.appendChild(row);
             });
+
+            rowsContainer.appendChild(fragment);
         }
 
         async function init() {
-            await fetchInitialData();
-
             // Check cache first
             if (transactionCache.has(currentPage)) {
                 const cachedData = transactionCache.get(currentPage)!;
                 totalTransactions = cachedData.total;
+                
                 renderTransactions(cachedData.transactions);
                 return;
             }
@@ -623,6 +567,8 @@ import Layout from "../layouts/Layout.astro";
 
         document.addEventListener('astro:page-load', () => {
             if (window.location.pathname !== '/transactions' && window.location.pathname !== '/transactions/') return;
+
+            cachedModalElements = null;
 
             const { 
                 addBtn, closeModalBtn, cancelModalBtn, form, deleteBtn, 
