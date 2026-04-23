@@ -88,7 +88,7 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                     <div>
                         <label for="category_id" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Category</label>
-                        <select id="category_id" name="category_id" required
+                        <select id="category_id" name="category_id"
                             class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors">
                             <option value="">Select Category</option>
                         </select>
@@ -182,7 +182,7 @@ import Layout from "../layouts/Layout.astro";
                 (document.getElementById('amount') as HTMLInputElement).value = (tx.amount / 100).toString();
                 (document.getElementById('type') as HTMLSelectElement).value = tx.type;
                 (document.getElementById('account_id') as HTMLSelectElement).value = tx.account_id.toString();
-                (document.getElementById('category_id') as HTMLSelectElement).value = tx.category_id.toString();
+                (document.getElementById('category_id') as HTMLSelectElement).value = tx.category_id ? tx.category_id.toString() : '';
                 (document.getElementById('date') as HTMLInputElement).value = tx.date.split('T')[0];
                 deleteBtn.classList.remove('hidden');
             } else {
@@ -211,13 +211,12 @@ import Layout from "../layouts/Layout.astro";
                 title: formData.get('title'),
                 amount: Math.round(parseFloat(formData.get('amount') as string) * 100),
                 type: formData.get('type'),
-                date: (formData.get('date') as string)
+                date: (formData.get('date') as string),
+                account_id: parseInt(formData.get('account_id') as string)
             };
 
-            if (!id) {
-                data.account_id = parseInt(formData.get('account_id') as string);
-                data.category_id = parseInt(formData.get('category_id') as string);
-            }
+            const categoryId = formData.get('category_id');
+            data.category_id = categoryId ? parseInt(categoryId as string) : null;
 
             const url = id ? `${API_URL}/transaction/${id}` : `${API_URL}/transaction`;
             const method = id ? 'PUT' : 'POST';
@@ -285,14 +284,14 @@ import Layout from "../layouts/Layout.astro";
                 row.onclick = () => openModal(tx);
                 
                 const displayDate = new Date(tx.date).toLocaleDateString('es-ES');
-                const accountName = accounts.find(a => a.id === tx.account_id)?.name || 'Unknown';
+                const accountName = tx.account_name || 'Unknown';
                 const categoryName = categories.find(c => c.id === tx.category_id)?.name || 'Uncategorized';
                 const categoryColor = categories.find(c => c.id === tx.category_id)?.color || '#8a8f98';
 
                 row.innerHTML = `
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center ${isIncome ? 'bg-[rgba(16,185,129,0.1)] text-[#10b981]' : 'bg-[rgba(255,255,255,0.05)] text-[#8a8f98]'}">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center ${isIncome ? 'bg-[rgba(16,185,129,0.1)] text-[#10b981]' : 'bg-[rgba(248,113,113,0.1)] text-[#f87171]'}">
                                 <i class="fas ${isIncome ? 'fa-plus' : 'fa-receipt'} text-[10px]"></i>
                             </div>
                             <span class="text-[14px] font-[510] text-[#f7f8f8]">${tx.title || 'Untitled'}</span>
@@ -301,10 +300,15 @@ import Layout from "../layouts/Layout.astro";
                     <td class="px-6 py-4 text-[13px] text-[#8a8f98]">
                         ${accountName}
                     </td>
+                    <td class="px-6 py-4 text-[13px] text-[#8a8f98]">
+                        ${accountName}
+                    </td>
                     <td class="px-6 py-4">
                         <span class="badge-pill bg-[rgba(255,255,255,0.03)] flex items-center w-fit gap-1.5">
-                            <div class="w-1.5 h-1.5 rounded-full" style="background-color: ${categoryColor}"></div>
-                            ${categoryName}
+                            <div class="w-1.5 h-1.5 rounded-full" style="background-color: ${tx.transfer_id ? '#8a8f98' : categoryColor}"></div>
+                            ${tx.transfer_id 
+                                ? `<i class="fas fa-right-left text-[10px] opacity-50"></i> TRANSFER` 
+                                : categoryName}
                         </span>
                     </td>
                     <td class="px-6 py-4 text-[13px] text-[#62666d]">

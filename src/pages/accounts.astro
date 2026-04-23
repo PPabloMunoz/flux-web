@@ -11,6 +11,9 @@ import Layout from "../layouts/Layout.astro";
                 <p class="text-[18px] text-[#8a8f98] mt-2 font-[400]">Manage your financial institutions and wallets in one place.</p>
             </div>
             <div class="flex gap-3">
+                <button class="btn-secondary" id="transfer-btn">
+                    <i class="fas fa-exchange-alt mr-2 text-[10px]"></i> Transfer
+                </button>
                 <button class="btn-primary" id="add-account-btn">
                     <i class="fas fa-plus mr-2 text-[10px]"></i> Add Account
                 </button>
@@ -64,6 +67,47 @@ import Layout from "../layouts/Layout.astro";
         </div>
     </div>
 
+    <!-- Transfer Modal -->
+    <div id="transfer-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="glass-card w-full max-w-md bg-[#0f1011] shadow-2xl animate-in fade-in zoom-in duration-200">
+                <div class="p-6 border-b border-[rgba(255,255,255,0.05)] flex items-center justify-between">
+                    <h2 class="text-xl font-[510] text-[#f7f8f8]">Transfer Funds</h2>
+                    <button id="close-transfer-modal" class="text-[#8a8f98] hover:text-[#f7f8f8] transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="transfer-form" class="p-6 space-y-4">
+                    <div>
+                        <label for="from" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">From Account</label>
+                        <select id="from" name="from" required
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors appearance-none">
+                            <option value="" disabled selected>Select origin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="to" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">To Account</label>
+                        <select id="to" name="to" required
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors appearance-none">
+                            <option value="" disabled selected>Select destination</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="transfer-amount" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Amount (EUR)</label>
+                        <input type="number" id="transfer-amount" name="amount" step="0.01" required
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors"
+                            placeholder="0.00" />
+                    </div>
+                    <div class="pt-4 flex gap-3">
+                        <button type="button" id="cancel-transfer-modal" class="btn-secondary w-full">Cancel</button>
+                        <button type="submit" class="btn-primary w-full">Confirm Transfer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         import type { Account } from "../types/account";
 
@@ -73,7 +117,9 @@ import Layout from "../layouts/Layout.astro";
         let accountsCache: Account[] | null = null;
 
         const modal = document.getElementById('account-modal');
+        const transferModal = document.getElementById('transfer-modal');
         const form = document.getElementById('account-form') as HTMLFormElement;
+        const transferForm = document.getElementById('transfer-form') as HTMLFormElement;
         const modalTitle = document.getElementById('modal-title');
         const deleteBtn = document.getElementById('delete-account-btn');
 
@@ -100,7 +146,60 @@ import Layout from "../layouts/Layout.astro";
             if (modal) {
                 modal.classList.add('hidden');
             }
+            if (transferModal) {
+                transferModal.classList.add('hidden');
+            }
             document.body.style.overflow = '';
+        }
+
+        function openTransferModal() {
+            if (!transferModal || !transferForm || !accountsCache) return;
+            
+            const fromSelect = document.getElementById('from') as HTMLSelectElement;
+            const toSelect = document.getElementById('to') as HTMLSelectElement;
+            
+            if (fromSelect && toSelect) {
+                const options = accountsCache.map(acc => `<option value="${acc.id}">${acc.name} (${(acc.balance / 100).toFixed(2)}€)</option>`).join('');
+                fromSelect.innerHTML = '<option value="" disabled selected>Select origin</option>' + options;
+                toSelect.innerHTML = '<option value="" disabled selected>Select destination</option>' + options;
+            }
+
+            transferForm.reset();
+            transferModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        async function handleTransfer(e: SubmitEvent) {
+            e.preventDefault();
+            const formData = new FormData(transferForm);
+            const data = {
+                from: parseInt(formData.get('from') as string),
+                to: parseInt(formData.get('to') as string),
+                amount: Math.round(parseFloat(formData.get('amount') as string) * 100)
+            };
+
+            if (data.from === data.to) {
+                alert('Origin and destination accounts must be different');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/transfer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Failed to complete transfer');
+                
+                accountsCache = null;
+                await init();
+                closeModal();
+            } catch (error) {
+                console.error('Transfer error:', error);
+                alert('Failed to complete transfer');
+            }
         }
 
         async function saveAccount(e: SubmitEvent) {
@@ -253,9 +352,13 @@ import Layout from "../layouts/Layout.astro";
             init();
 
             document.getElementById('add-account-btn')?.addEventListener('click', () => openModal());
+            document.getElementById('transfer-btn')?.addEventListener('click', openTransferModal);
             document.getElementById('close-modal')?.addEventListener('click', closeModal);
             document.getElementById('cancel-modal')?.addEventListener('click', closeModal);
+            document.getElementById('close-transfer-modal')?.addEventListener('click', closeModal);
+            document.getElementById('cancel-transfer-modal')?.addEventListener('click', closeModal);
             document.getElementById('account-form')?.addEventListener('submit', saveAccount);
+            document.getElementById('transfer-form')?.addEventListener('submit', handleTransfer);
             document.getElementById('delete-account-btn')?.addEventListener('click', deleteAccount);
         });
     </script>

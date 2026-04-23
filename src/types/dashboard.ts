@@ -8,6 +8,7 @@ export interface Transaction {
     category_id: number;
     category_name: string;
     category_color: string;
+    account_name: string;
     transfer_id?: number;
 }
 
