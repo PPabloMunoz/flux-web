@@ -4,6 +4,9 @@ import Layout from "../layouts/Layout.astro";
 
 <Layout title="Stats">
     <main class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Tooltip -->
+        <div id="chart-tooltip" class="fixed pointer-events-none z-50 opacity-0 transition-opacity duration-200 bg-[#0c0d0e] px-4 py-3 text-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-[rgba(255,255,255,0.08)] rounded-lg backdrop-blur-md"></div>
+
         <!-- Header -->
         <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
@@ -11,10 +14,6 @@ import Layout from "../layouts/Layout.astro";
                 <p class="text-[18px] text-[#8a8f98] mt-2 font-[400]">Analyze your spending habits and income growth over time.</p>
             </div>
             <div class="flex gap-3">
-                <div class="flex bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-md p-0.5">
-                    <button class="px-3 py-1.5 text-[12px] font-[510] text-[#f7f8f8] bg-[rgba(255,255,255,0.05)] rounded-sm">Monthly</button>
-                    <button class="px-3 py-1.5 text-[12px] font-[510] text-[#8a8f98] hover:text-[#d0d6e0] transition-colors">Yearly</button>
-                </div>
                 <button class="btn-secondary">
                     <i class="fas fa-download mr-2 text-[10px]"></i> Report
                 </button>
@@ -23,12 +22,26 @@ import Layout from "../layouts/Layout.astro";
 
         <!-- Main Charts Area -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-            <!-- Spending Overview -->
+            <!-- Total Balance History -->
+            <div class="lg:col-span-3 glass-card p-8 mb-6">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-[20px] font-[510] tracking-tight text-[#f7f8f8]">Total Balance</h2>
+                        <p class="text-[14px] text-[#8a8f98] mt-1">Your net worth progression over the last 12 months.</p>
+                    </div>
+                </div>
+                
+                <div class="h-[250px] flex items-end justify-between gap-2 px-2" id="balance-chart">
+                    <!-- Dynamic Bars Placeholder -->
+                </div>
+            </div>
+
+            <!-- Cash Flow Overview -->
             <div class="lg:col-span-2 glass-card p-8">
                 <div class="flex items-center justify-between mb-8">
                     <div>
                         <h2 class="text-[20px] font-[510] tracking-tight text-[#f7f8f8]">Cash Flow</h2>
-                        <p class="text-[14px] text-[#8a8f98] mt-1">Income vs Expenses for the last 6 months.</p>
+                        <p class="text-[14px] text-[#8a8f98] mt-1">Income vs Expenses for the last 12 months.</p>
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2">
@@ -93,43 +106,8 @@ import Layout from "../layouts/Layout.astro";
             <div class="glass-card p-8">
                 <h2 class="text-[20px] font-[510] tracking-tight text-[#f7f8f8] mb-8">Categories</h2>
                 
-                <div class="space-y-6">
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[13px] text-[#d0d6e0]">Housing</span>
-                            <span class="text-[13px] font-[510] text-[#f7f8f8]">$1,200.00</span>
-                        </div>
-                        <div class="w-full h-1.5 bg-[rgba(255,255,255,0.03)] rounded-full overflow-hidden">
-                            <div class="h-full bg-[#5e6ad2] rounded-full" style="width: 45%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[13px] text-[#d0d6e0]">Food & Dining</span>
-                            <span class="text-[13px] font-[510] text-[#f7f8f8]">$850.20</span>
-                        </div>
-                        <div class="w-full h-1.5 bg-[rgba(255,255,255,0.03)] rounded-full overflow-hidden">
-                            <div class="h-full bg-[#5e6ad2] rounded-full" style="width: 32%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[13px] text-[#d0d6e0]">Entertainment</span>
-                            <span class="text-[13px] font-[510] text-[#f7f8f8]">$320.50</span>
-                        </div>
-                        <div class="w-full h-1.5 bg-[rgba(255,255,255,0.03)] rounded-full overflow-hidden">
-                            <div class="h-full bg-[#5e6ad2] rounded-full" style="width: 15%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[13px] text-[#d0d6e0]">Transportation</span>
-                            <span class="text-[13px] font-[510] text-[#f7f8f8]">$180.00</span>
-                        </div>
-                        <div class="w-full h-1.5 bg-[rgba(255,255,255,0.03)] rounded-full overflow-hidden">
-                            <div class="h-full bg-[#5e6ad2] rounded-full" style="width: 8%"></div>
-                        </div>
-                    </div>
+                <div class="space-y-6" id="categories-list">
+                    <!-- Dynamic Categories Placeholder -->
                 </div>
 
                 <button class="w-full mt-10 py-3 text-[13px] font-[510] text-[#8a8f98] hover:text-[#f7f8f8] border border-[rgba(255,255,255,0.08)] rounded-md transition-all">
@@ -139,37 +117,165 @@ import Layout from "../layouts/Layout.astro";
         </div>
 
         <!-- Insights -->
-        <section>
-            <h2 class="text-[20px] font-[510] tracking-tight text-[#f7f8f8] mb-6">Financial Insights</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-card p-6 border-l-2 border-l-[#10b981]">
-                    <div class="flex items-center gap-3 mb-4">
-                        <i class="fas fa-lightbulb text-[#10b981]"></i>
-                        <h3 class="text-[15px] font-[510] text-[#f7f8f8]">Savings Potential</h3>
-                    </div>
-                    <p class="text-[13px] text-[#8a8f98] leading-relaxed">
-                        You've spent 15% less on entertainment this month. If you continue this trend, you could save $1,400 by end of year.
-                    </p>
-                </div>
-                <div class="glass-card p-6 border-l-2 border-l-[#5e6ad2]">
-                    <div class="flex items-center gap-3 mb-4">
-                        <i class="fas fa-chart-line text-[#5e6ad2]"></i>
-                        <h3 class="text-[15px] font-[510] text-[#f7f8f8]">Income Growth</h3>
-                    </div>
-                    <p class="text-[13px] text-[#8a8f98] leading-relaxed">
-                        Your monthly income has increased by 12% compared to the previous quarter, mostly driven by freelance activities.
-                    </p>
-                </div>
-                <div class="glass-card p-6 border-l-2 border-l-rose-500">
-                    <div class="flex items-center gap-3 mb-4">
-                        <i class="fas fa-triangle-exclamation text-rose-500"></i>
-                        <h3 class="text-[15px] font-[510] text-[#f7f8f8]">Spending Alert</h3>
-                    </div>
-                    <p class="text-[13px] text-[#8a8f98] leading-relaxed">
-                        Subscription costs have increased by $45 this month. Consider reviewing your active streaming services.
-                    </p>
-                </div>
-            </div>
-        </section>
+        <!-- (Insights section removed) -->
     </main>
+
+    <script>
+        import type { StatsData } from "../types/stats";
+        import { fetchStats } from "../services/api";
+        import { formatCurrency } from "../utils/formatters";
+
+        const tooltip = document.getElementById('chart-tooltip');
+
+        function showTooltip(e: MouseEvent, content: string) {
+            if (!tooltip) return;
+            tooltip.innerHTML = content;
+            tooltip.style.opacity = '1';
+            updateTooltipPosition(e);
+        }
+
+        function updateTooltipPosition(e: MouseEvent) {
+            if (!tooltip) return;
+            const x = e.clientX + 15;
+            const y = e.clientY - 40;
+            tooltip.style.left = `${x}px`;
+            tooltip.style.top = `${y}px`;
+        }
+
+        function hideTooltip() {
+            if (!tooltip) return;
+            tooltip.style.opacity = '0';
+        }
+
+        async function loadStats() {
+            try {
+                const data = await fetchStats();
+                renderStats(data);
+            } catch (error) {
+                if (error instanceof Error && error.message === 'Unauthorized') {
+                    window.location.href = '/login';
+                    return;
+                }
+                console.error('Error fetching stats:', error);
+            }
+        }
+
+        function renderStats(data: StatsData) {
+            // Render Balance History Chart
+            const balanceContainer = document.getElementById('balance-chart');
+            if (balanceContainer) {
+                balanceContainer.innerHTML = '';
+                const maxBalance = Math.max(...data.balance_history.map(p => Math.abs(p.balance)), 1);
+
+                data.balance_history.forEach(point => {
+                    const height = (point.balance / maxBalance) * 100;
+                    const barGroup = document.createElement('div');
+                    barGroup.className = 'flex-1 flex flex-col items-center gap-2 h-full min-w-[30px] group/bar';
+                    
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'w-full flex items-end h-full cursor-pointer';
+                    
+                    const bar = document.createElement('div');
+                    bar.className = 'w-full bg-[#10b981] rounded-t-sm transition-all duration-700 opacity-60 group-hover/bar:opacity-100 group-hover/bar:bg-[#34d399]';
+                    bar.style.height = `${height}%`;
+                    
+                    barContainer.appendChild(bar);
+                    barGroup.appendChild(barContainer);
+                    
+                    const label = document.createElement('span');
+                    label.className = 'text-[11px] text-[#62666d] group-hover/bar:text-[#d0d6e0] transition-colors';
+                    label.textContent = point.month;
+                    barGroup.appendChild(label);
+
+                    barContainer.addEventListener('mouseenter', (e) => {
+                        showTooltip(e, `
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[#8a8f98] font-medium">${point.month}</span>
+                                <span class="text-[#f7f8f8] font-bold text-[14px]">${formatCurrency(point.balance)}</span>
+                                <span class="text-[10px] text-[#10b981]">Total Balance</span>
+                            </div>
+                        `);
+                    });
+                    barContainer.addEventListener('mousemove', updateTooltipPosition);
+                    barContainer.addEventListener('mouseleave', hideTooltip);
+
+                    balanceContainer.appendChild(barGroup);
+                });
+            }
+
+            // Render Cash Flow Chart
+            const chartContainer = document.getElementById('cashflow-chart');
+            if (chartContainer) {
+                chartContainer.innerHTML = '';
+                const maxVal = Math.max(...data.cash_flow.flatMap(p => [p.income, p.expenses]), 1);
+
+                data.cash_flow.forEach(point => {
+                    const incomeHeight = (point.income / maxVal) * 100;
+                    const expensesHeight = (point.expenses / maxVal) * 100;
+
+                    const barGroup = document.createElement('div');
+                    barGroup.className = 'flex-1 flex flex-col items-center gap-2 h-full min-w-[40px] group/flow';
+                    
+                    const flowContainer = document.createElement('div');
+                    flowContainer.className = 'w-full flex items-end gap-1 h-full cursor-pointer';
+                    
+                    flowContainer.innerHTML = `
+                        <div class="flex-1 bg-[#5e6ad2] rounded-t-sm transition-all duration-500 opacity-60 group-hover/flow:opacity-100" style="height: ${incomeHeight}%"></div>
+                        <div class="flex-1 bg-[rgba(255,255,255,0.1)] rounded-t-sm transition-all duration-500 group-hover/flow:bg-[rgba(255,255,255,0.2)]" style="height: ${expensesHeight}%"></div>
+                    `;
+                    
+                    const label = document.createElement('span');
+                    label.className = 'text-[11px] text-[#62666d] group-hover/flow:text-[#d0d6e0] transition-colors';
+                    label.textContent = point.month;
+                    
+                    barGroup.appendChild(flowContainer);
+                    barGroup.appendChild(label);
+
+                    flowContainer.addEventListener('mouseenter', (e) => {
+                        showTooltip(e, `
+                            <div class="flex flex-col gap-2 min-w-[120px]">
+                                <span class="text-[#8a8f98] font-medium border-b border-[rgba(255,255,255,0.08)] pb-1 mb-1">${point.month}</span>
+                                <div class="flex justify-between items-center gap-4">
+                                    <span class="text-[11px] text-[#8a8f98]">Income</span>
+                                    <span class="text-[#10b981] font-bold">${formatCurrency(point.income)}</span>
+                                </div>
+                                <div class="flex justify-between items-center gap-4">
+                                    <span class="text-[11px] text-[#8a8f98]">Expenses</span>
+                                    <span class="text-rose-500 font-bold">${formatCurrency(point.expenses)}</span>
+                                </div>
+                                <div class="flex justify-between items-center gap-4 border-t border-[rgba(255,255,255,0.08)] pt-1 mt-1">
+                                    <span class="text-[10px] text-[#8a8f98]">Net</span>
+                                    <span class="text-[11px] font-bold text-[#f7f8f8]">${formatCurrency(point.income - point.expenses)}</span>
+                                </div>
+                            </div>
+                        `);
+                    });
+                    flowContainer.addEventListener('mousemove', updateTooltipPosition);
+                    flowContainer.addEventListener('mouseleave', hideTooltip);
+
+                    chartContainer.appendChild(barGroup);
+                });
+            }
+
+            // Render Categories
+            const catList = document.getElementById('categories-list');
+            if (catList) {
+                catList.innerHTML = data.categories.map(cat => `
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[13px] text-[#d0d6e0]">${cat.name}</span>
+                            <span class="text-[13px] font-[510] text-[#f7f8f8]">${formatCurrency(cat.amount)}</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-[rgba(255,255,255,0.03)] rounded-full overflow-hidden">
+                            <div class="h-full bg-[#5e6ad2] rounded-full" style="width: ${cat.percentage}%"></div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        document.addEventListener('astro:page-load', () => {
+            loadStats();
+        });
+    </script>
 </Layout>
