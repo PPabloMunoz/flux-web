@@ -106,20 +106,8 @@ import Layout from "../layouts/Layout.astro";
          */
         const API_URL = import.meta.env.PUBLIC_API_URL; 
 
-        // Mock data for initial preview (delete this when your backend is ready)
-        const mockTransactions = Array.from({ length: 20 }, (_, i) => ({
-            id: i,
-            description: ['Grocery Shopping', 'Monthly Rent', 'Salary Deposit', 'Netflix Subscription', 'Coffee', 'Gas Station'][i % 6],
-            category: ['Food', 'Housing', 'Income', 'Entertainment', 'Lifestyle', 'Travel'][i % 6],
-            date: new Date(Date.now() - (i * 86400000)).toLocaleDateString(),
-            amount: (Math.random() * 500 * (i % 3 === 0 ? 1 : -1)).toFixed(2)
-        }));
-
-        const mockStats = {
-            totalBalance: 12450.60,
-            income: 4200.00,
-            expenses: 1850.25
-        };
+        // In-memory cache
+        let dashboardCache = null;
 
         /**
          * Render Data to the DOM
@@ -130,11 +118,16 @@ import Layout from "../layouts/Layout.astro";
             const incomeEl = document.getElementById('monthly-income');
             const expenseEl = document.getElementById('monthly-expenses');
 
-            const currencyFormatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+            const currencyFormatter = new Intl.NumberFormat('es-ES', { 
+                style: 'currency', 
+                currency: 'EUR' 
+            });
 
-            if(balanceEl) balanceEl.textContent = currencyFormatter.format(data.total_balance / 100);
-            if(incomeEl) incomeEl.textContent = currencyFormatter.format(data.monthly_income / 100);
-            if(expenseEl) expenseEl.textContent = currencyFormatter.format(data.monthly_expenses / 100);
+            const format = (val) => currencyFormatter.format(val / 100);
+
+            if(balanceEl) balanceEl.textContent = format(data.total_balance);
+            if(incomeEl) incomeEl.textContent = format(data.monthly_income);
+            if(expenseEl) expenseEl.textContent = format(data.monthly_expenses);
 
             // Update Transactions
             const rowsContainer = document.getElementById('transaction-rows');
@@ -174,7 +167,7 @@ import Layout from "../layouts/Layout.astro";
                     </td>
                     <td class="px-6 py-4 text-right">
                         <span class="text-[14px] font-[510] ${isIncome ? 'text-[#10b981]' : 'text-[#f7f8f8]'}">
-                            ${isIncome ? '+' : '-'}${currencyFormatter.format(tx.amount / 100)}
+                            ${isIncome ? '+' : '-'}${format(tx.amount)}
                         </span>
                     </td>
                 `;
@@ -186,6 +179,11 @@ import Layout from "../layouts/Layout.astro";
          * Fetch Data from your Golang API
          */
         async function fetchDashboardData() {
+            if (dashboardCache) {
+                renderDashboard(dashboardCache);
+                return; // STOP HERE if we have data
+            }
+
             try {
                 const response = await fetch(`${API_URL}/dashboard`, {
                     credentials: 'include'
@@ -199,11 +197,12 @@ import Layout from "../layouts/Layout.astro";
                 if (!response.ok) throw new Error('Failed to fetch dashboard data');
 
                 const data = await response.json();
+                dashboardCache = data;
                 renderDashboard(data);
             } catch (error) {
                 console.error('Error fetching data:', error);
                 const rowsContainer = document.getElementById('transaction-rows');
-                if (rowsContainer) {
+                if (rowsContainer && !dashboardCache) {
                     rowsContainer.innerHTML = `
                         <tr>
                             <td colspan="4" class="px-6 py-12 text-center text-rose-500">
@@ -216,7 +215,7 @@ import Layout from "../layouts/Layout.astro";
             }
         }
 
-        // Initialize
-        fetchDashboardData();
+        // Initialize on page load
+        document.addEventListener('astro:page-load', fetchDashboardData);
     </script>
 </Layout>

@@ -11,10 +11,7 @@ import Layout from "../layouts/Layout.astro";
                 <p class="text-[18px] text-[#8a8f98] mt-2 font-[400]">Manage your financial institutions and wallets in one place.</p>
             </div>
             <div class="flex gap-3">
-                <button class="btn-secondary">
-                    Manage Groups
-                </button>
-                <button class="btn-primary">
+                <button class="btn-primary" id="add-account-btn">
                     <i class="fas fa-plus mr-2 text-[10px]"></i> Add Account
                 </button>
             </div>
@@ -30,15 +27,128 @@ import Layout from "../layouts/Layout.astro";
         </div>
     </main>
 
+    <!-- Account Modal -->
+    <div id="account-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="glass-card w-full max-w-md bg-[#0f1011] shadow-2xl animate-in fade-in zoom-in duration-200">
+                <div class="p-6 border-b border-[rgba(255,255,255,0.05)] flex items-center justify-between">
+                    <h2 class="text-xl font-[510] text-[#f7f8f8]" id="modal-title">Add Account</h2>
+                    <button id="close-modal" class="text-[#8a8f98] hover:text-[#f7f8f8] transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="account-form" class="p-6 space-y-4">
+                    <input type="hidden" id="account-id" name="id" />
+                    <div>
+                        <label for="name" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Account Name</label>
+                        <input type="text" id="name" name="name" required
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors"
+                            placeholder="e.g. Main Checking" />
+                    </div>
+                    <div>
+                        <label for="balance" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Initial Balance (EUR)</label>
+                        <input type="number" id="balance" name="balance" step="0.01" required
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors"
+                            placeholder="0.00" value="0" />
+                    </div>
+                    <div class="pt-4 flex gap-3">
+                        <button type="button" id="delete-account-btn" class="hidden px-4 py-2 text-rose-500 hover:bg-rose-500/10 rounded-md text-sm font-[510] transition-colors mr-auto">
+                            Delete
+                        </button>
+                        <button type="button" id="cancel-modal" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = import.meta.env.PUBLIC_API_URL; 
 
-        const mockAccounts = [
-            { id: 1, name: 'Main Checking', institution: 'Chase Bank', type: 'Checking', balance: 5420.50, color: '#3b82f6', lastSync: '2 mins ago' },
-            { id: 2, name: 'Savings Fund', institution: 'Ally Bank', type: 'Savings', balance: 12450.00, color: '#10b981', lastSync: '1 hour ago' },
-            { id: 3, name: 'Crypto Wallet', institution: 'Coinbase', type: 'Investment', balance: 3210.75, color: '#f59e0b', lastSync: 'Just now' },
-            { id: 4, name: 'Travel Card', institution: 'American Express', type: 'Credit', balance: -450.20, color: '#6366f1', lastSync: '5 mins ago' }
-        ];
+        // In-memory cache
+        let accountsCache = null;
+
+        const modal = document.getElementById('account-modal');
+        const form = document.getElementById('account-form') as HTMLFormElement;
+        const modalTitle = document.getElementById('modal-title');
+        const deleteBtn = document.getElementById('delete-account-btn');
+
+        function openModal(account = null) {
+            if (account) {
+                modalTitle.textContent = 'Edit Account';
+                (document.getElementById('account-id') as HTMLInputElement).value = account.id;
+                (document.getElementById('name') as HTMLInputElement).value = account.name;
+                (document.getElementById('balance') as HTMLInputElement).value = (account.balance / 100).toString();
+                deleteBtn.classList.remove('hidden');
+            } else {
+                modalTitle.textContent = 'Add Account';
+                form.reset();
+                (document.getElementById('account-id') as HTMLInputElement).value = '';
+                deleteBtn.classList.add('hidden');
+            }
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        async function saveAccount(e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const id = formData.get('id');
+            const data = {
+                name: formData.get('name'),
+                balance: Math.round(parseFloat(formData.get('balance') as string) * 100),
+                is_active: "1"
+            };
+
+            const url = id ? `${API_URL}/account/${id}` : `${API_URL}/account`;
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Failed to save account');
+                
+                accountsCache = null;
+                await init();
+                closeModal();
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('Failed to save account');
+            }
+        }
+
+        async function deleteAccount() {
+            const id = (document.getElementById('account-id') as HTMLInputElement).value;
+            if (!id || !confirm('Are you sure you want to delete this account?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/account/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Failed to delete account');
+                
+                accountsCache = null;
+                await init();
+                closeModal();
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Failed to delete account');
+            }
+        }
 
         function renderAccounts(accounts) {
             const grid = document.getElementById('accounts-grid');
@@ -46,28 +156,33 @@ import Layout from "../layouts/Layout.astro";
             
             grid.innerHTML = '';
 
+            const currencyFormatter = new Intl.NumberFormat('es-ES', { 
+                style: 'currency', 
+                currency: 'EUR' 
+            });
+
             accounts.forEach(acc => {
                 const card = document.createElement('div');
                 card.className = 'glass-card p-6 flex flex-col hover:border-[rgba(255,255,255,0.15)] transition-all group cursor-pointer';
+                card.onclick = () => openModal(acc);
                 
-                const isNegative = acc.balance < 0;
-                const formattedBalance = new Intl.NumberFormat('en-US', { 
-                    style: 'currency', 
-                    currency: 'USD' 
-                }).format(Math.abs(acc.balance));
+                // Balance comes in cents from the API
+                const balanceInDollars = acc.balance / 100;
+                const isNegative = balanceInDollars < 0;
+                const formattedBalance = currencyFormatter.format(Math.abs(balanceInDollars));
 
                 card.innerHTML = `
                     <div class="flex items-start justify-between mb-6">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg flex items-center justify-center border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)]">
-                                <i class="fas ${getIcon(acc.type)} text-[14px] text-[#d0d6e0]"></i>
+                                <i class="fas ${getIcon(acc.name)} text-[14px] text-[#d0d6e0]"></i>
                             </div>
                             <div>
                                 <h3 class="text-[16px] font-[510] text-[#f7f8f8] group-hover:text-[#828fff] transition-colors">${acc.name}</h3>
-                                <p class="text-[12px] text-[#62666d]">${acc.institution}</p>
+                                <p class="text-[12px] text-[#62666d]">Account</p>
                             </div>
                         </div>
-                        <span class="badge-pill bg-[rgba(255,255,255,0.03)] text-[10px]">${acc.type}</span>
+                        <span class="badge-pill bg-[rgba(255,255,255,0.03)] text-[10px]">${acc.is_active === "1" ? 'Active' : 'Inactive'}</span>
                     </div>
                     
                     <div class="mt-auto">
@@ -75,8 +190,8 @@ import Layout from "../layouts/Layout.astro";
                             ${isNegative ? '-' : ''}${formattedBalance}
                         </div>
                         <div class="flex items-center justify-between mt-4 pt-4 border-t border-[rgba(255,255,255,0.05)]">
-                            <span class="text-[11px] text-[#62666d]">Last synced ${acc.lastSync}</span>
-                            <i class="fas fa-chevron-right text-[10px] text-[#3e3e44] group-hover:text-[#8a8f98] transition-colors"></i>
+                            <span class="text-[11px] text-[#62666d]">Created ${new Date(acc.created_at).toLocaleDateString()}</span>
+                            <i class="fas fa-edit text-[10px] text-[#3e3e44] group-hover:text-[#8a8f98] transition-colors"></i>
                         </div>
                     </div>
                 `;
@@ -84,22 +199,23 @@ import Layout from "../layouts/Layout.astro";
             });
         }
 
-        function getIcon(type) {
-            switch(type.toLowerCase()) {
-                case 'checking': return 'fa-university';
-                case 'savings': return 'fa-piggy-bank';
-                case 'investment': return 'fa-chart-line';
-                case 'credit': return 'fa-credit-card';
-                default: return 'fa-wallet';
-            }
+        function getIcon(name) {
+            const n = name.toLowerCase();
+            if (n.includes('savings')) return 'fa-piggy-bank';
+            if (n.includes('checking')) return 'fa-university';
+            if (n.includes('investment') || n.includes('stock')) return 'fa-chart-line';
+            if (n.includes('credit') || n.includes('card')) return 'fa-credit-card';
+            return 'fa-wallet';
         }
 
         async function init() {
-            try {
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 800));
+            if (accountsCache) {
+                renderAccounts(accountsCache);
+                return; // STOP HERE if we have data
+            }
 
-                const response = await fetch(`${API_URL}/accounts`, {
+            try {
+                const response = await fetch(`${API_URL}/account`, {
                     credentials: 'include'
                 });
 
@@ -108,13 +224,33 @@ import Layout from "../layouts/Layout.astro";
                     return;
                 }
 
-                renderAccounts(mockAccounts);
+                if (!response.ok) throw new Error('Failed to fetch accounts');
+
+                const accounts = await response.json();
+                accountsCache = accounts;
+                renderAccounts(accounts);
             } catch (error) {
                 console.error('Fetch error:', error);
-                renderAccounts(mockAccounts); // Fallback to mock
+                const grid = document.getElementById('accounts-grid');
+                if (grid && !accountsCache) {
+                    grid.innerHTML = `
+                        <div class="col-span-full py-24 text-center">
+                            <p class="text-rose-500 font-[510]">Error loading accounts. Please try again later.</p>
+                        </div>
+                    `;
+                }
             }
         }
 
-        init();
+        // Initialize on page load
+        document.addEventListener('astro:page-load', () => {
+            init();
+
+            document.getElementById('add-account-btn')?.addEventListener('click', () => openModal());
+            document.getElementById('close-modal')?.addEventListener('click', closeModal);
+            document.getElementById('cancel-modal')?.addEventListener('click', closeModal);
+            document.getElementById('account-form')?.addEventListener('submit', saveAccount);
+            document.getElementById('delete-account-btn')?.addEventListener('click', deleteAccount);
+        });
     </script>
 </Layout>
