@@ -17,13 +17,32 @@ import Layout from "../layouts/Layout.astro";
             </div>
         </header>
 
-        <!-- Categories Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="categories-grid">
-            <!-- Loading State -->
-            <div class="col-span-full py-24 text-center">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#5e6ad2] mb-4"></div>
-                <p class="text-[#8a8f98] font-[510]">Loading categories...</p>
+        <!-- Income Categories Section -->
+        <section class="mb-12">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center border border-[rgba(255,255,255,0.08)] bg-[rgba(16,185,129,0.1)]">
+                    <i class="fas fa-arrow-up text-[12px] text-[#10b981]"></i>
+                </div>
+                <h2 class="text-[20px] font-[590] text-[#f7f8f8] tracking-tight">Income</h2>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="income-grid"></div>
+        </section>
+
+        <!-- Expense Categories Section -->
+        <section>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center border border-[rgba(255,255,255,0.08)] bg-[rgba(244,63,94,0.1)]">
+                    <i class="fas fa-arrow-down text-[12px] text-[#f43f5e]"></i>
+                </div>
+                <h2 class="text-[20px] font-[590] text-[#f7f8f8] tracking-tight">Expenses</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="expense-grid"></div>
+        </section>
+
+        <!-- Global Loading State -->
+        <div id="global-loading" class="py-24 text-center">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#5e6ad2] mb-4"></div>
+            <p class="text-[#8a8f98] font-[510]">Loading categories...</p>
         </div>
     </main>
 
@@ -203,10 +222,15 @@ import Layout from "../layouts/Layout.astro";
         }
 
         function renderCategories(categories: Category[]) {
-            const grid = document.getElementById('categories-grid');
-            if (!grid) return;
+            const incomeGrid = document.getElementById('income-grid');
+            const expenseGrid = document.getElementById('expense-grid');
+            const loading = document.getElementById('global-loading');
             
-            grid.innerHTML = '';
+            if (!incomeGrid || !expenseGrid) return;
+            if (loading) loading.classList.add('hidden');
+            
+            incomeGrid.innerHTML = '';
+            expenseGrid.innerHTML = '';
 
             const typeIcons: Record<string, string> = {
                 expense: 'fa-arrow-down',
@@ -214,6 +238,7 @@ import Layout from "../layouts/Layout.astro";
             };
 
             categories.forEach((cat: Category) => {
+                const grid = cat.type === 'income' ? incomeGrid : expenseGrid;
                 const card = document.createElement('div');
                 card.className = 'glass-card p-6 flex flex-col hover:border-[rgba(255,255,255,0.15)] transition-all group cursor-pointer';
                 card.onclick = () => openModal(cat);
@@ -240,15 +265,29 @@ import Layout from "../layouts/Layout.astro";
                 `;
                 grid.appendChild(card);
             });
+
+            // Handle empty states
+            [incomeGrid, expenseGrid].forEach(grid => {
+                if (grid.innerHTML === '') {
+                    grid.innerHTML = `
+                        <div class="col-span-full py-12 px-6 rounded-lg border border-dashed border-[rgba(255,255,255,0.05)] text-center">
+                            <p class="text-[#62666d] text-[13px]">No categories found in this section.</p>
+                        </div>
+                    `;
+                }
+            });
         }
 
         async function init() {
+            const loading = document.getElementById('global-loading');
             if (categoriesCache) {
                 renderCategories(categoriesCache);
                 return;
             }
 
             try {
+                if (loading) loading.classList.remove('hidden');
+                
                 const response = await fetch(`${API_URL}/category`, {
                     credentials: 'include'
                 });
@@ -265,9 +304,10 @@ import Layout from "../layouts/Layout.astro";
                 renderCategories(categoriesData);
             } catch (error) {
                 console.error('Fetch error:', error);
-                const grid = document.getElementById('categories-grid');
-                if (grid && !categoriesCache) {
-                    grid.innerHTML = `
+                const incomeGrid = document.getElementById('income-grid');
+                if (incomeGrid && !categoriesCache) {
+                    if (loading) loading.classList.add('hidden');
+                    incomeGrid.innerHTML = `
                         <div class="col-span-full py-24 text-center">
                             <p class="text-rose-500 font-[510]">Error loading categories. Please try again later.</p>
                         </div>
