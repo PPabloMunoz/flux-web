@@ -86,32 +86,61 @@ import Layout from "../layouts/Layout.astro";
                                 placeholder="0.00" />
                         </div>
                         <div>
-                            <label for="type" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Type</label>
-                            <select id="type" name="type" required
-                                class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors">
-                                <option value="expense">Expense</option>
-                                <option value="income">Income</option>
-                            </select>
+                            <label class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Type</label>
+                            <div class="flex gap-4 items-center h-[42px]">
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="radio" name="type" value="expense" class="hidden peer" required>
+                                    <div class="w-4 h-4 rounded-full border border-[rgba(255,255,255,0.2)] peer-checked:border-[#5e6ad2] peer-checked:border-[5px] transition-all"></div>
+                                    <span class="text-[14px] text-[#8a8f98] group-hover:text-[#f7f8f8] transition-colors">Expense</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="radio" name="type" value="income" class="hidden peer">
+                                    <div class="w-4 h-4 rounded-full border border-[rgba(255,255,255,0.2)] peer-checked:border-[#10b981] peer-checked:border-[5px] transition-all"></div>
+                                    <span class="text-[14px] text-[#8a8f98] group-hover:text-[#f7f8f8] transition-colors">Income</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                    <div>
+                    <div class="relative">
                         <label for="account_id" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Account</label>
-                        <select id="account_id" name="account_id" required
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors">
-                            <option value="">Select Account</option>
-                        </select>
+                        <input type="hidden" id="account_id" name="account_id" required />
+                        <button type="button" id="account-select-trigger" 
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2.5 text-[#f7f8f8] flex items-center justify-between focus:outline-none focus:border-[#5e6ad2] transition-colors group">
+                            <span id="selected-account-label" class="text-[#8a8f98]">Select Account</span>
+                            <i class="fas fa-chevron-down text-[10px] text-[#62666d] group-hover:text-[#8a8f98] transition-colors"></i>
+                        </button>
+                        
+                        <div id="account-dropdown" class="absolute left-0 right-0 mt-2 bg-[#161718] border border-[rgba(255,255,255,0.08)] rounded-lg shadow-2xl hidden z-50 max-h-60 overflow-y-auto custom-scrollbar">
+                            <div id="account-options" class="p-1.5 space-y-1">
+                                <!-- Options will be injected here -->
+                            </div>
+                        </div>
                     </div>
-                    <div>
+                    <div class="relative">
                         <label for="category_id" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Category</label>
-                        <select id="category_id" name="category_id"
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors">
-                            <option value="">Select Category</option>
-                        </select>
+                        <input type="hidden" id="category_id" name="category_id" required />
+                        <button type="button" id="category-select-trigger" disabled
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2.5 text-[#f7f8f8] flex items-center justify-between focus:outline-none focus:border-[#5e6ad2] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span id="selected-category-label" class="text-[#8a8f98]">Select a type first</span>
+                            <i class="fas fa-chevron-down text-[10px] text-[#62666d] group-hover:text-[#8a8f98] transition-colors"></i>
+                        </button>
+                        
+                        <div id="category-dropdown" class="absolute left-0 right-0 mt-2 bg-[#161718] border border-[rgba(255,255,255,0.08)] rounded-lg shadow-2xl hidden z-50 max-h-60 overflow-y-auto custom-scrollbar">
+                            <div id="category-options" class="p-1.5 space-y-1">
+                                <!-- Options will be injected here -->
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <label for="date" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Date</label>
                         <input type="date" id="date" name="date" required
                             class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors" />
+                    </div>
+                    <div>
+                        <label for="notes" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Notes</label>
+                        <textarea id="notes" name="notes" rows="3"
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors resize-none"
+                            placeholder="Add additional details..."></textarea>
                     </div>
                     <div class="pt-4 flex gap-3">
                         <button type="button" id="delete-transaction-btn" class="hidden px-4 py-2 text-rose-500 hover:bg-rose-500/10 rounded-md text-sm font-[510] transition-colors mr-auto">
@@ -138,10 +167,28 @@ import Layout from "../layouts/Layout.astro";
         let accounts: Account[] = [];
         let categories: Category[] = [];
 
-        const modal = document.getElementById('transaction-modal');
-        const form = document.getElementById('transaction-form') as HTMLFormElement;
-        const modalTitle = document.getElementById('modal-title');
-        const deleteBtn = document.getElementById('delete-transaction-btn');
+        function getModalElements() {
+            return {
+                modal: document.getElementById('transaction-modal'),
+                form: document.getElementById('transaction-form') as HTMLFormElement,
+                modalTitle: document.getElementById('modal-title'),
+                deleteBtn: document.getElementById('delete-transaction-btn'),
+                addBtn: document.getElementById('add-transaction-btn'),
+                closeModalBtn: document.getElementById('close-modal'),
+                cancelModalBtn: document.getElementById('cancel-modal'),
+                accTrigger: document.getElementById('account-select-trigger'),
+                catTrigger: document.getElementById('category-select-trigger'),
+                dateInput: document.getElementById('date') as HTMLInputElement,
+                notesInput: document.getElementById('notes') as HTMLTextAreaElement,
+                accLabel: document.getElementById('selected-account-label'),
+                accInput: document.getElementById('account_id') as HTMLInputElement,
+                catLabel: document.getElementById('selected-category-label'),
+                catInput: document.getElementById('category_id') as HTMLInputElement,
+                txIdInput: document.getElementById('transaction-id') as HTMLInputElement,
+                titleInput: document.getElementById('title') as HTMLInputElement,
+                amountInput: document.getElementById('amount') as HTMLInputElement
+            };
+        }
 
         async function fetchInitialData() {
             if(accounts.length != 0 && categories.length != 0) return
@@ -167,46 +214,183 @@ import Layout from "../layouts/Layout.astro";
         }
 
         function populateSelects() {
-            const accSelect = document.getElementById('account_id') as HTMLSelectElement;
-            const catSelect = document.getElementById('category_id') as HTMLSelectElement;
+            const accountOptions = document.getElementById('account-options');
+            const selectedLabel = document.getElementById('selected-account-label');
+            const accountIdInput = document.getElementById('account_id') as HTMLInputElement;
+            const accountDropdown = document.getElementById('account-dropdown');
 
-            if (!accSelect || !catSelect) return;
+            if (!accountOptions || !selectedLabel || !accountIdInput || !accountDropdown) return;
 
-            accSelect.innerHTML = '<option value="">Select Account</option>';
-            accounts.forEach(acc => {
-                const opt = document.createElement('option');
-                opt.value = acc.id.toString();
-                opt.textContent = `${acc.name} (ID: ${acc.id})`;
-                accSelect.appendChild(opt);
+            const currencyFormatter = new Intl.NumberFormat('es-ES', { 
+                style: 'currency', 
+                currency: 'EUR' 
             });
 
-            catSelect.innerHTML = '<option value="">Select Category</option>';
-            categories.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat.id.toString();
-                opt.textContent = cat.name;
-                catSelect.appendChild(opt);
+            accountOptions.innerHTML = '';
+            accounts.forEach(acc => {
+                const option = document.createElement('button');
+                option.type = 'button';
+                option.className = 'w-full text-left px-3 py-2.5 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center justify-between group';
+                
+                option.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="text-[14px] font-[510] text-[#f7f8f8]">${acc.name}</span>
+                        <span class="text-[10px] text-[#62666d]">ID: ${acc.id}</span>
+                    </div>
+                    <span class="text-[13px] font-[510] text-[#8a8f98] group-hover:text-[#f7f8f8]">${currencyFormatter.format(acc.balance / 100)}</span>
+                `;
+
+                option.onclick = () => {
+                    accountIdInput.value = acc.id.toString();
+                    selectedLabel.textContent = acc.name;
+                    selectedLabel.classList.remove('text-[#8a8f98]');
+                    selectedLabel.classList.add('text-[#f7f8f8]');
+                    accountDropdown.classList.add('hidden');
+                };
+
+                accountOptions.appendChild(option);
+            });
+
+            updateCategorySelect();
+        }
+
+        function updateCategorySelect() {
+            const categoryOptions = document.getElementById('category-options');
+            const selectedLabel = document.getElementById('selected-category-label');
+            const categoryIdInput = document.getElementById('category_id') as HTMLInputElement;
+            const categoryTrigger = document.getElementById('category-select-trigger') as HTMLButtonElement;
+            const categoryDropdown = document.getElementById('category-dropdown');
+
+            const typeRadios = document.getElementsByName('type') as NodeListOf<HTMLInputElement>;
+            let selectedType = "";
+            
+            typeRadios.forEach(r => {
+                if (r.checked) selectedType = r.value;
+            });
+
+            if (!categoryOptions || !selectedLabel || !categoryIdInput || !categoryTrigger || !categoryDropdown) return;
+
+            // Reset current selection ONLY if the type changed and it doesn't match the new type's categories
+            // In the case of opening an edit modal, we want to keep the value if possible.
+            // For now, let's keep it simple: if we are resetting because of a manual type change, we reset the category.
+            
+            if (!selectedType) {
+                selectedLabel.textContent = 'Select a type first';
+                categoryTrigger.disabled = true;
+                categoryOptions.innerHTML = '';
+                categoryIdInput.value = "";
+                selectedLabel.classList.remove('text-[#f7f8f8]');
+                selectedLabel.classList.add('text-[#8a8f98]');
+                return;
+            }
+
+            categoryTrigger.disabled = false;
+            categoryOptions.innerHTML = '';
+            
+            const filteredCategories = categories.filter(cat => cat.type === selectedType);
+            
+            // If the currently selected category is not in the filtered list, reset it
+            const currentCatId = categoryIdInput.value;
+            const isCurrentCatValid = filteredCategories.some(cat => cat.id.toString() === currentCatId);
+            
+            if (!isCurrentCatValid) {
+                categoryIdInput.value = "";
+                selectedLabel.textContent = 'Select Category';
+                selectedLabel.classList.remove('text-[#f7f8f8]');
+                selectedLabel.classList.add('text-[#8a8f98]');
+            }
+
+            filteredCategories.forEach(cat => {
+                const option = document.createElement('button');
+                option.type = 'button';
+                option.className = 'w-full text-left px-3 py-2.5 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center gap-3 group';
+                
+                option.innerHTML = `
+                    <div class="w-2 h-2 rounded-full" style="background-color: ${cat.color || '#8a8f98'}"></div>
+                    <span class="text-[14px] font-[510] text-[#f7f8f8]">${cat.name}</span>
+                `;
+
+                option.onclick = () => {
+                    categoryIdInput.value = cat.id.toString();
+                    selectedLabel.textContent = cat.name;
+                    selectedLabel.classList.remove('text-[#8a8f98]');
+                    selectedLabel.classList.add('text-[#f7f8f8]');
+                    categoryDropdown.classList.add('hidden');
+                };
+
+                categoryOptions.appendChild(option);
             });
         }
 
         function openModal(tx: Transaction | null = null) {
-            if (!modal || !modalTitle || !deleteBtn) return;
+            const { 
+                modal, modalTitle, deleteBtn, form, txIdInput, titleInput, 
+                amountInput, dateInput, notesInput, accLabel, accInput, 
+                catLabel, catInput 
+            } = getModalElements();
+            
+            if (!modal || !modalTitle || !deleteBtn || !form) return;
 
             if (tx) {
                 modalTitle.textContent = 'Edit Transaction';
-                (document.getElementById('transaction-id') as HTMLInputElement).value = tx.id.toString();
-                (document.getElementById('title') as HTMLInputElement).value = tx.title;
-                (document.getElementById('amount') as HTMLInputElement).value = (tx.amount / 100).toString();
-                (document.getElementById('type') as HTMLSelectElement).value = tx.type;
-                (document.getElementById('account_id') as HTMLSelectElement).value = tx.account_id.toString();
-                (document.getElementById('category_id') as HTMLSelectElement).value = tx.category_id ? tx.category_id.toString() : '';
-                (document.getElementById('date') as HTMLInputElement).value = tx.date.split('T')[0];
+                if (txIdInput) txIdInput.value = tx.id.toString();
+                if (titleInput) titleInput.value = tx.title;
+                if (amountInput) amountInput.value = (tx.amount / 100).toString();
+                if (dateInput) dateInput.value = tx.date.split('T')[0];
+                if (notesInput) notesInput.value = tx.notes || '';
+                
+                // Set type radio
+                const typeRadios = document.getElementsByName('type') as NodeListOf<HTMLInputElement>;
+                typeRadios.forEach(r => {
+                    if (r.value === tx.type) r.checked = true;
+                });
+
+                // Set custom account select
+                const account = accounts.find(a => a.id === tx.account_id);
+                if (accLabel && accInput && account) {
+                    accLabel.textContent = account.name;
+                    accLabel.classList.remove('text-[#8a8f98]');
+                    accLabel.classList.add('text-[#f7f8f8]');
+                    accInput.value = account.id.toString();
+                }
+
+                // Important: update category select FIRST so it's not disabled
+                updateCategorySelect();
+
+                // Set custom category select
+                const category = categories.find(c => c.id === tx.category_id);
+                if (catLabel && catInput && category) {
+                    catLabel.textContent = category.name;
+                    catLabel.classList.remove('text-[#8a8f98]');
+                    catLabel.classList.add('text-[#f7f8f8]');
+                    catInput.value = category.id.toString();
+                }
+
                 deleteBtn.classList.remove('hidden');
             } else {
                 modalTitle.textContent = 'Add Transaction';
                 form.reset();
-                (document.getElementById('transaction-id') as HTMLInputElement).value = '';
-                (document.getElementById('date') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
+                if (txIdInput) txIdInput.value = '';
+                if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+                if (notesInput) notesInput.value = '';
+                
+                // Reset custom account select
+                if (accLabel && accInput) {
+                    accLabel.textContent = 'Select Account';
+                    accLabel.classList.remove('text-[#f7f8f8]');
+                    accLabel.classList.add('text-[#8a8f98]');
+                    accInput.value = '';
+                }
+
+                // Reset custom category select
+                if (catLabel && catInput) {
+                    catLabel.textContent = 'Select a type first';
+                    catLabel.classList.remove('text-[#f7f8f8]');
+                    catLabel.classList.add('text-[#8a8f98]');
+                    catInput.value = '';
+                }
+
+                updateCategorySelect();
                 deleteBtn.classList.add('hidden');
             }
             modal.classList.remove('hidden');
@@ -214,26 +398,43 @@ import Layout from "../layouts/Layout.astro";
         }
 
         function closeModal() {
+            const { modal } = getModalElements();
             if (modal) {
                 modal.classList.add('hidden');
+                document.getElementById('account-dropdown')?.classList.add('hidden');
+                document.getElementById('category-dropdown')?.classList.add('hidden');
             }
             document.body.style.overflow = '';
         }
 
         async function saveTransaction(e: SubmitEvent) {
             e.preventDefault();
+            const { form, txIdInput, accInput, catInput } = getModalElements();
+            if (!form) return;
+
             const formData = new FormData(form);
-            const id = formData.get('id');
+            const id = txIdInput?.value;
+            const accountId = accInput?.value;
+            const categoryId = catInput?.value;
+            
+            if (!accountId) {
+                alert('Please select an account');
+                return;
+            }
+            if (!categoryId) {
+                alert('Please select a category');
+                return;
+            }
+
             const data: any = {
                 title: formData.get('title'),
                 amount: Math.round(parseFloat(formData.get('amount') as string) * 100),
                 type: formData.get('type'),
                 date: (formData.get('date') as string),
-                account_id: parseInt(formData.get('account_id') as string)
+                account_id: parseInt(accountId),
+                category_id: parseInt(categoryId),
+                notes: formData.get('notes')
             };
-
-            const categoryId = formData.get('category_id');
-            data.category_id = categoryId ? parseInt(categoryId as string) : null;
 
             const url = id ? `${API_URL}/transaction/${id}` : `${API_URL}/transaction`;
             const method = id ? 'PUT' : 'POST';
@@ -413,15 +614,51 @@ import Layout from "../layouts/Layout.astro";
         }
 
         document.addEventListener('astro:page-load', () => {
+            const { 
+                addBtn, closeModalBtn, cancelModalBtn, form, deleteBtn, 
+                accTrigger, catTrigger 
+            } = getModalElements();
+
             init();
 
-            document.getElementById('add-transaction-btn')?.addEventListener('click', () => openModal());
-            document.getElementById('close-modal')?.addEventListener('click', closeModal);
-            document.getElementById('cancel-modal')?.addEventListener('click', closeModal);
-            document.getElementById('transaction-form')?.addEventListener('submit', saveTransaction);
-            document.getElementById('delete-transaction-btn')?.addEventListener('click', deleteTransaction);
+            addBtn?.addEventListener('click', () => openModal());
+            closeModalBtn?.addEventListener('click', closeModal);
+            cancelModalBtn?.addEventListener('click', closeModal);
+            form?.addEventListener('submit', saveTransaction);
+            deleteBtn?.addEventListener('click', deleteTransaction);
             document.getElementById('prev-page')?.addEventListener('click', handlePrevPage);
             document.getElementById('next-page')?.addEventListener('click', handleNextPage);
+
+            accTrigger?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('account-dropdown')?.classList.toggle('hidden');
+                document.getElementById('category-dropdown')?.classList.add('hidden');
+            });
+
+            catTrigger?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('category-dropdown')?.classList.toggle('hidden');
+                document.getElementById('account-dropdown')?.classList.add('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                const trigger1 = document.getElementById('account-select-trigger');
+                const trigger2 = document.getElementById('category-select-trigger');
+                const dropdown1 = document.getElementById('account-dropdown');
+                const dropdown2 = document.getElementById('category-dropdown');
+
+                if (!trigger1?.contains(e.target as Node) && !dropdown1?.contains(e.target as Node)) {
+                    dropdown1?.classList.add('hidden');
+                }
+                if (!trigger2?.contains(e.target as Node) && !dropdown2?.contains(e.target as Node)) {
+                    dropdown2?.classList.add('hidden');
+                }
+            });
+
+            // Type radio listener
+            document.getElementsByName('type').forEach(radio => {
+                radio.addEventListener('change', () => updateCategorySelect());
+            });
         });
     </script>
 </Layout>

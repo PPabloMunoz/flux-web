@@ -79,19 +79,29 @@ import Layout from "../layouts/Layout.astro";
                     </button>
                 </div>
                 <form id="transfer-form" class="p-6 space-y-4">
-                    <div>
-                        <label for="from" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">From Account</label>
-                        <select id="from" name="from" required
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors appearance-none">
-                            <option value="" disabled selected>Select origin</option>
-                        </select>
+                    <div class="relative">
+                        <label for="from_account_id" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">From Account</label>
+                        <input type="hidden" id="from_account_id" name="from" required />
+                        <button type="button" id="from-account-trigger" 
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2.5 text-[#f7f8f8] flex items-center justify-between focus:outline-none focus:border-[#5e6ad2] transition-colors group">
+                            <span id="from-account-label" class="text-[#8a8f98]">Select origin</span>
+                            <i class="fas fa-chevron-down text-[10px] text-[#62666d] group-hover:text-[#8a8f98] transition-colors"></i>
+                        </button>
+                        <div id="from-account-dropdown" class="absolute left-0 right-0 mt-2 bg-[#161718] border border-[rgba(255,255,255,0.08)] rounded-lg shadow-2xl hidden z-50 max-h-60 overflow-y-auto custom-scrollbar">
+                            <div id="from-account-options" class="p-1.5 space-y-1"></div>
+                        </div>
                     </div>
-                    <div>
-                        <label for="to" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">To Account</label>
-                        <select id="to" name="to" required
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors appearance-none">
-                            <option value="" disabled selected>Select destination</option>
-                        </select>
+                    <div class="relative">
+                        <label for="to_account_id" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">To Account</label>
+                        <input type="hidden" id="to_account_id" name="to" required />
+                        <button type="button" id="to-account-trigger" 
+                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2.5 text-[#f7f8f8] flex items-center justify-between focus:outline-none focus:border-[#5e6ad2] transition-colors group">
+                            <span id="to-account-label" class="text-[#8a8f98]">Select destination</span>
+                            <i class="fas fa-chevron-down text-[10px] text-[#62666d] group-hover:text-[#8a8f98] transition-colors"></i>
+                        </button>
+                        <div id="to-account-dropdown" class="absolute left-0 right-0 mt-2 bg-[#161718] border border-[rgba(255,255,255,0.08)] rounded-lg shadow-2xl hidden z-50 max-h-60 overflow-y-auto custom-scrollbar">
+                            <div id="to-account-options" class="p-1.5 space-y-1"></div>
+                        </div>
                     </div>
                     <div>
                         <label for="transfer-amount" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Amount (EUR)</label>
@@ -116,15 +126,30 @@ import Layout from "../layouts/Layout.astro";
         // In-memory cache
         let accountsCache: Account[] | null = null;
 
-        const modal = document.getElementById('account-modal');
-        const transferModal = document.getElementById('transfer-modal');
-        const form = document.getElementById('account-form') as HTMLFormElement;
-        const transferForm = document.getElementById('transfer-form') as HTMLFormElement;
-        const modalTitle = document.getElementById('modal-title');
-        const deleteBtn = document.getElementById('delete-account-btn');
+        function getElements() {
+            return {
+                modal: document.getElementById('account-modal'),
+                transferModal: document.getElementById('transfer-modal'),
+                form: document.getElementById('account-form') as HTMLFormElement,
+                transferForm: document.getElementById('transfer-form') as HTMLFormElement,
+                modalTitle: document.getElementById('modal-title'),
+                deleteBtn: document.getElementById('delete-account-btn'),
+                addAccountBtn: document.getElementById('add-account-btn'),
+                transferBtn: document.getElementById('transfer-btn'),
+                fromTrigger: document.getElementById('from-account-trigger'),
+                toTrigger: document.getElementById('to-account-trigger'),
+                fromDropdown: document.getElementById('from-account-dropdown'),
+                toDropdown: document.getElementById('to-account-dropdown'),
+                fromLabel: document.getElementById('from-account-label'),
+                toLabel: document.getElementById('to-account-label'),
+                fromInput: document.getElementById('from_account_id') as HTMLInputElement,
+                toInput: document.getElementById('to_account_id') as HTMLInputElement
+            };
+        }
 
         function openModal(account: Account | null = null) {
-            if (!modal || !modalTitle || !deleteBtn) return;
+            const { modal, modalTitle, deleteBtn, form } = getElements();
+            if (!modal || !modalTitle || !deleteBtn || !form) return;
 
             if (account) {
                 modalTitle.textContent = 'Edit Account';
@@ -143,40 +168,94 @@ import Layout from "../layouts/Layout.astro";
         }
 
         function closeModal() {
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-            if (transferModal) {
-                transferModal.classList.add('hidden');
-            }
+            const { modal, transferModal } = getElements();
+            if (modal) modal.classList.add('hidden');
+            if (transferModal) transferModal.classList.add('hidden');
             document.body.style.overflow = '';
         }
 
         function openTransferModal() {
+            const { transferModal, transferForm, fromLabel, toLabel, fromInput, toInput } = getElements();
             if (!transferModal || !transferForm || !accountsCache) return;
             
-            const fromSelect = document.getElementById('from') as HTMLSelectElement;
-            const toSelect = document.getElementById('to') as HTMLSelectElement;
-            
-            if (fromSelect && toSelect) {
-                const options = accountsCache.map(acc => `<option value="${acc.id}">${acc.name} (${(acc.balance / 100).toFixed(2)}€)</option>`).join('');
-                fromSelect.innerHTML = '<option value="" disabled selected>Select origin</option>' + options;
-                toSelect.innerHTML = '<option value="" disabled selected>Select destination</option>' + options;
+            // Populate custom selects
+            populateTransferDropdowns();
+
+            // Reset labels and inputs
+            if (fromLabel) {
+                fromLabel.textContent = 'Select origin';
+                fromLabel.classList.remove('text-[#f7f8f8]');
+                fromLabel.classList.add('text-[#8a8f98]');
             }
+            if (toLabel) {
+                toLabel.textContent = 'Select destination';
+                toLabel.classList.remove('text-[#f7f8f8]');
+                toLabel.classList.add('text-[#8a8f98]');
+            }
+            if (fromInput) fromInput.value = '';
+            if (toInput) toInput.value = '';
 
             transferForm.reset();
             transferModal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
 
+        function populateTransferDropdowns() {
+            const { fromDropdown, toDropdown, fromLabel, toLabel, fromInput, toInput } = getElements();
+            if (!fromDropdown || !toDropdown || !accountsCache) return;
+
+            const fromOptions = document.getElementById('from-account-options');
+            const toOptions = document.getElementById('to-account-options');
+            if (!fromOptions || !toOptions) return;
+
+            const currencyFormatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+
+            const createOptions = (container: HTMLElement, label: HTMLElement | null, input: HTMLInputElement | null, dropdown: HTMLElement | null) => {
+                container.innerHTML = '';
+                accountsCache!.forEach(acc => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'w-full text-left px-3 py-2.5 rounded-md hover:bg-[rgba(255,255,255,0.05)] transition-colors flex items-center justify-between group';
+                    btn.innerHTML = `
+                        <div class="flex flex-col">
+                            <span class="text-[14px] font-[510] text-[#f7f8f8]">${acc.name}</span>
+                            <span class="text-[10px] text-[#62666d]">ID: ${acc.id}</span>
+                        </div>
+                        <span class="text-[13px] font-[510] text-[#8a8f98] group-hover:text-[#f7f8f8]">${currencyFormatter.format(acc.balance / 100)}</span>
+                    `;
+                    btn.onclick = () => {
+                        if (input) input.value = acc.id.toString();
+                        if (label) {
+                            label.textContent = acc.name;
+                            label.classList.remove('text-[#8a8f98]');
+                            label.classList.add('text-[#f7f8f8]');
+                        }
+                        if (dropdown) dropdown.classList.add('hidden');
+                    };
+                    container.appendChild(btn);
+                });
+            };
+
+            createOptions(fromOptions, fromLabel, fromInput, fromDropdown);
+            createOptions(toOptions, toLabel, toInput, toDropdown);
+        }
+
         async function handleTransfer(e: SubmitEvent) {
             e.preventDefault();
+            const { transferForm, fromInput, toInput } = getElements();
+            if (!transferForm) return;
+
             const formData = new FormData(transferForm);
             const data = {
-                from: parseInt(formData.get('from') as string),
-                to: parseInt(formData.get('to') as string),
+                from: parseInt(fromInput?.value || ""),
+                to: parseInt(toInput?.value || ""),
                 amount: Math.round(parseFloat(formData.get('amount') as string) * 100)
             };
+
+            if (!data.from || !data.to) {
+                alert('Please select both accounts');
+                return;
+            }
 
             if (data.from === data.to) {
                 alert('Origin and destination accounts must be different');
@@ -349,17 +428,52 @@ import Layout from "../layouts/Layout.astro";
 
         // Initialize on page load
         document.addEventListener('astro:page-load', () => {
+            const { 
+                addAccountBtn, transferBtn, closeModalBtn, cancelModalBtn, 
+                closeTransferModalBtn, cancelTransferModalBtn, form, 
+                transferForm, deleteAccountBtn, fromTrigger, toTrigger 
+            } = {
+                ...getElements(),
+                closeModalBtn: document.getElementById('close-modal'),
+                cancelModalBtn: document.getElementById('cancel-modal'),
+                closeTransferModalBtn: document.getElementById('close-transfer-modal'),
+                cancelTransferModalBtn: document.getElementById('cancel-transfer-modal'),
+                deleteAccountBtn: document.getElementById('delete-account-btn')
+            };
+
             init();
 
-            document.getElementById('add-account-btn')?.addEventListener('click', () => openModal());
-            document.getElementById('transfer-btn')?.addEventListener('click', openTransferModal);
-            document.getElementById('close-modal')?.addEventListener('click', closeModal);
-            document.getElementById('cancel-modal')?.addEventListener('click', closeModal);
-            document.getElementById('close-transfer-modal')?.addEventListener('click', closeModal);
-            document.getElementById('cancel-transfer-modal')?.addEventListener('click', closeModal);
-            document.getElementById('account-form')?.addEventListener('submit', saveAccount);
-            document.getElementById('transfer-form')?.addEventListener('submit', handleTransfer);
-            document.getElementById('delete-account-btn')?.addEventListener('click', deleteAccount);
+            addAccountBtn?.addEventListener('click', () => openModal());
+            transferBtn?.addEventListener('click', openTransferModal);
+            closeModalBtn?.addEventListener('click', closeModal);
+            cancelModalBtn?.addEventListener('click', closeModal);
+            closeTransferModalBtn?.addEventListener('click', closeModal);
+            cancelTransferModalBtn?.addEventListener('click', closeModal);
+            form?.addEventListener('submit', saveAccount);
+            transferForm?.addEventListener('submit', handleTransfer);
+            deleteAccountBtn?.addEventListener('click', deleteAccount);
+
+            fromTrigger?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('from-account-dropdown')?.classList.toggle('hidden');
+                document.getElementById('to-account-dropdown')?.classList.add('hidden');
+            });
+
+            toTrigger?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('to-account-dropdown')?.classList.toggle('hidden');
+                document.getElementById('from-account-dropdown')?.classList.add('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                const { fromTrigger, toTrigger, fromDropdown, toDropdown } = getElements();
+                if (!fromTrigger?.contains(e.target as Node) && !fromDropdown?.contains(e.target as Node)) {
+                    fromDropdown?.classList.add('hidden');
+                }
+                if (!toTrigger?.contains(e.target as Node) && !toDropdown?.contains(e.target as Node)) {
+                    toDropdown?.classList.add('hidden');
+                }
+            });
         });
     </script>
 </Layout>

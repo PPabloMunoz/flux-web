@@ -47,12 +47,19 @@ import Layout from "../layouts/Layout.astro";
                             placeholder="e.g. Food & Drinks" />
                     </div>
                     <div>
-                        <label for="type" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Type</label>
-                        <select id="type" name="type" required
-                            class="w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-md px-3 py-2 text-[#f7f8f8] focus:outline-none focus:border-[#5e6ad2] transition-colors appearance-none">
-                            <option value="expense" class="bg-[#0f1011]">Expense</option>
-                            <option value="income" class="bg-[#0f1011]">Income</option>
-                        </select>
+                        <label class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Type</label>
+                        <div class="flex gap-4 items-center h-[42px]">
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <input type="radio" name="type" value="expense" class="hidden peer" required>
+                                <div class="w-4 h-4 rounded-full border border-[rgba(255,255,255,0.2)] peer-checked:border-[#5e6ad2] peer-checked:border-[5px] transition-all"></div>
+                                <span class="text-[14px] text-[#8a8f98] group-hover:text-[#f7f8f8] transition-colors">Expense</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <input type="radio" name="type" value="income" class="hidden peer">
+                                <div class="w-4 h-4 rounded-full border border-[rgba(255,255,255,0.2)] peer-checked:border-[#10b981] peer-checked:border-[5px] transition-all"></div>
+                                <span class="text-[14px] text-[#8a8f98] group-hover:text-[#f7f8f8] transition-colors">Income</span>
+                            </label>
+                        </div>
                     </div>
                     <div>
                         <label for="color" class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Color</label>
@@ -84,28 +91,46 @@ import Layout from "../layouts/Layout.astro";
 
         let categoriesCache: Category[] | null = null;
 
-        const modal = document.getElementById('category-modal');
-        const form = document.getElementById('category-form') as HTMLFormElement;
-        const modalTitle = document.getElementById('modal-title');
-        const deleteBtn = document.getElementById('delete-category-btn');
+        function getElements() {
+            return {
+                modal: document.getElementById('category-modal'),
+                form: document.getElementById('category-form') as HTMLFormElement,
+                modalTitle: document.getElementById('modal-title'),
+                deleteBtn: document.getElementById('delete-category-btn'),
+                addBtn: document.getElementById('add-category-btn'),
+                closeBtn: document.getElementById('close-modal'),
+                cancelBtn: document.getElementById('cancel-modal'),
+                idInput: document.getElementById('category-id') as HTMLInputElement,
+                nameInput: document.getElementById('name') as HTMLInputElement,
+                colorInput: document.getElementById('color') as HTMLInputElement,
+                colorHexInput: document.getElementById('color-hex') as HTMLInputElement,
+            };
+        }
 
         function openModal(category: Category | null = null) {
-            if (!modal || !modalTitle || !deleteBtn) return;
+            const { modal, modalTitle, deleteBtn, form, idInput, nameInput, colorInput, colorHexInput } = getElements();
+            if (!modal || !modalTitle || !deleteBtn || !form) return;
 
             if (category) {
                 modalTitle.textContent = 'Edit Category';
-                (document.getElementById('category-id') as HTMLInputElement).value = category.id.toString();
-                (document.getElementById('name') as HTMLInputElement).value = category.name;
-                (document.getElementById('type') as HTMLSelectElement).value = category.type;
-                (document.getElementById('color') as HTMLInputElement).value = category.color;
-                (document.getElementById('color-hex') as HTMLInputElement).value = category.color;
+                if (idInput) idInput.value = category.id.toString();
+                if (nameInput) nameInput.value = category.name;
+                if (colorInput) colorInput.value = category.color;
+                if (colorHexInput) colorHexInput.value = category.color;
+                
+                // Set type radio
+                const typeRadios = document.getElementsByName('type') as NodeListOf<HTMLInputElement>;
+                typeRadios.forEach(r => {
+                    if (r.value === category.type) r.checked = true;
+                });
+
                 deleteBtn.classList.remove('hidden');
             } else {
                 modalTitle.textContent = 'Add Category';
                 form.reset();
-                (document.getElementById('category-id') as HTMLInputElement).value = '';
-                (document.getElementById('color') as HTMLInputElement).value = '#5e6ad2';
-                (document.getElementById('color-hex') as HTMLInputElement).value = '#5e6ad2';
+                if (idInput) idInput.value = '';
+                if (colorInput) colorInput.value = '#5e6ad2';
+                if (colorHexInput) colorHexInput.value = '#5e6ad2';
                 deleteBtn.classList.add('hidden');
             }
             modal.classList.remove('hidden');
@@ -113,6 +138,7 @@ import Layout from "../layouts/Layout.astro";
         }
 
         function closeModal() {
+            const { modal } = getElements();
             if (modal) {
                 modal.classList.add('hidden');
             }
@@ -121,6 +147,9 @@ import Layout from "../layouts/Layout.astro";
 
         async function saveCategory(e: SubmitEvent) {
             e.preventDefault();
+            const { form } = getElements();
+            if (!form) return;
+
             const formData = new FormData(form);
             const id = formData.get('id');
             const data = {
@@ -152,7 +181,8 @@ import Layout from "../layouts/Layout.astro";
         }
 
         async function deleteCategory() {
-            const id = (document.getElementById('category-id') as HTMLInputElement).value;
+            const { idInput } = getElements();
+            const id = idInput?.value;
             if (!id || !confirm('Are you sure you want to delete this category?')) return;
 
             try {
@@ -247,28 +277,29 @@ import Layout from "../layouts/Layout.astro";
         }
 
         document.addEventListener('astro:page-load', () => {
-            if (window.location.pathname !== '/categories') return;
+            const { 
+                addBtn, closeBtn, cancelBtn, form, deleteBtn, 
+                colorInput, colorHexInput 
+            } = getElements();
+
             init();
 
-            const colorPicker = document.getElementById('color') as HTMLInputElement;
-            const colorHex = document.getElementById('color-hex') as HTMLInputElement;
-
-            colorPicker?.addEventListener('input', (e) => {
-                colorHex.value = (e.target as HTMLInputElement).value;
+            colorInput?.addEventListener('input', (e) => {
+                if (colorHexInput) colorHexInput.value = (e.target as HTMLInputElement).value;
             });
 
-            colorHex?.addEventListener('input', (e) => {
+            colorHexInput?.addEventListener('input', (e) => {
                 const val = (e.target as HTMLInputElement).value;
-                if (/^#[0-9A-F]{6}$/i.test(val)) {
-                    colorPicker.value = val;
+                if (/^#[0-9A-F]{6}$/i.test(val) && colorInput) {
+                    colorInput.value = val;
                 }
             });
 
-            document.getElementById('add-category-btn')?.addEventListener('click', () => openModal());
-            document.getElementById('close-modal')?.addEventListener('click', closeModal);
-            document.getElementById('cancel-modal')?.addEventListener('click', closeModal);
-            document.getElementById('category-form')?.addEventListener('submit', saveCategory);
-            document.getElementById('delete-category-btn')?.addEventListener('click', deleteCategory);
+            addBtn?.addEventListener('click', () => openModal());
+            closeBtn?.addEventListener('click', closeModal);
+            cancelBtn?.addEventListener('click', closeModal);
+            form?.addEventListener('submit', saveCategory);
+            deleteBtn?.addEventListener('click', deleteCategory);
         });
     </script>
 </Layout>
