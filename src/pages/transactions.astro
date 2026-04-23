@@ -166,6 +166,7 @@ import Layout from "../layouts/Layout.astro";
         let totalTransactions = 0;
         let accounts: Account[] = [];
         let categories: Category[] = [];
+        const transactionCache = new Map<number, { transactions: Transaction[], total: number }>();
 
         function getModalElements() {
             return {
@@ -449,6 +450,7 @@ import Layout from "../layouts/Layout.astro";
 
                 if (!response.ok) throw new Error('Failed to save transaction');
                 
+                transactionCache.clear();
                 await init();
                 closeModal();
             } catch (error) {
@@ -469,6 +471,7 @@ import Layout from "../layouts/Layout.astro";
 
                 if (!response.ok) throw new Error('Failed to delete transaction');
                 
+                transactionCache.clear();
                 await init();
                 closeModal();
             } catch (error) {
@@ -555,6 +558,14 @@ import Layout from "../layouts/Layout.astro";
         async function init() {
             await fetchInitialData();
 
+            // Check cache first
+            if (transactionCache.has(currentPage)) {
+                const cachedData = transactionCache.get(currentPage)!;
+                totalTransactions = cachedData.total;
+                renderTransactions(cachedData.transactions);
+                return;
+            }
+
             try {
                 const response = await fetch(`${API_URL}/transaction?limit=${PAGE_SIZE}&offset=${currentPage * PAGE_SIZE}`, {
                     credentials: 'include'
@@ -568,17 +579,17 @@ import Layout from "../layouts/Layout.astro";
                 if (!response.ok) throw new Error('Failed to fetch transactions');
 
                 const data = await response.json();
-                // Assuming the API returns { transactions: Transaction[], total: number } 
-                // or just Transaction[] if it doesn't support total yet (we'll handle both)
                 let transactions: Transaction[] = [];
                 if (Array.isArray(data)) {
                     transactions = data;
-                    // If it's just an array, we can't know the real total, but we can guess
                     totalTransactions = currentPage * PAGE_SIZE + transactions.length + (transactions.length === PAGE_SIZE ? 1 : 0);
                 } else {
                     transactions = data.transactions;
                     totalTransactions = data.total;
                 }
+
+                // Store in cache
+                transactionCache.set(currentPage, { transactions, total: totalTransactions });
 
                 renderTransactions(transactions);
             } catch (error) {
@@ -611,6 +622,8 @@ import Layout from "../layouts/Layout.astro";
         }
 
         document.addEventListener('astro:page-load', () => {
+            if (window.location.pathname !== '/transactions' && window.location.pathname !== '/transactions/') return;
+
             const { 
                 addBtn, closeModalBtn, cancelModalBtn, form, deleteBtn, 
                 accTrigger, catTrigger 
