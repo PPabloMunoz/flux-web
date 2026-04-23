@@ -1,0 +1,275 @@
+---
+import "../styles/global.css";
+---
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceFlow | Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="text-foreground">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 w-full glass-card border-b border-border py-4 px-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <!-- Brand & Primary Nav -->
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-2">
+                    <div class="bg-indigo-600 p-2 rounded-lg">
+                        <i class="fas fa-wallet text-white text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-foreground">FinanceFlow</span>
+                </div>
+
+                <!-- Desktop Nav Links -->
+                <div class="hidden md:flex items-center gap-1">
+                    <a href="/" class="nav-link nav-link-active">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </a>
+                    <a href="/accounts" class="nav-link nav-link-inactive">
+                        <i class="fas fa-building-columns"></i>
+                        Accounts
+                    </a>
+                    <a href="/stats" class="nav-link nav-link-inactive">
+                        <i class="fas fa-chart-pie"></i>
+                        Stats
+                    </a>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <!-- User Profile & Logout -->
+                <div class="flex items-center gap-3 border-r border-border pr-6">
+                    <div class="h-8 w-8 rounded-full bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30">
+                        <span class="text-xs font-bold text-indigo-400">JD</span>
+                    </div>
+                    <span class="hidden sm:inline text-sm font-medium text-muted-foreground">John Doe</span>
+                </div>
+                
+                <button id="logout-btn" class="flex items-center gap-2 text-muted-foreground hover:text-rose-400 font-medium transition-colors group">
+                    <span class="text-sm">Logout</span>
+                    <i class="fas fa-right-from-bracket text-lg group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Header -->
+        <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-foreground">Dashboard Overview</h1>
+                <p class="text-muted-foreground">Welcome back. Here's what's happening with your money today.</p>
+            </div>
+            <div class="flex gap-3">
+                <button class="btn-secondary">
+                    <i class="fas fa-download mr-2"></i>Export
+                </button>
+                <button class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>Add Transaction
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10" id="stats-container">
+            <!-- Total Balance -->
+            <div class="glass-card p-6 rounded-[2rem] shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Balance</span>
+                    <div class="p-3 bg-indigo-500/10 text-indigo-500 rounded-2xl">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="text-3xl font-bold tracking-tight text-foreground" id="total-balance">$0.00</div>
+                <div class="mt-4 flex items-center text-xs">
+                    <span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-full font-bold mr-2">+2.4%</span>
+                    <span class="text-muted-foreground font-medium">vs last month</span>
+                </div>
+            </div>
+
+            <!-- Monthly Income -->
+            <div class="glass-card p-6 rounded-[2rem] shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm font-medium text-muted-foreground uppercase tracking-wider">Monthly Income</span>
+                    <div class="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl">
+                        <i class="fas fa-arrow-trend-up"></i>
+                    </div>
+                </div>
+                <div class="text-3xl font-bold tracking-tight text-foreground" id="monthly-income">$0.00</div>
+                <div class="mt-4 flex items-center text-xs">
+                    <span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-full font-bold mr-2">+12%</span>
+                    <span class="text-muted-foreground font-medium">from salaries</span>
+                </div>
+            </div>
+
+            <!-- Monthly Expenses -->
+            <div class="glass-card p-6 rounded-[2rem] shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm font-medium text-muted-foreground uppercase tracking-wider">Monthly Expenses</span>
+                    <div class="p-3 bg-rose-500/10 text-rose-500 rounded-2xl">
+                        <i class="fas fa-arrow-trend-down"></i>
+                    </div>
+                </div>
+                <div class="text-3xl font-bold tracking-tight text-foreground" id="monthly-expenses">$0.00</div>
+                <div class="mt-4 flex items-center text-xs">
+                    <span class="px-2 py-1 bg-rose-500/10 text-rose-500 rounded-full font-bold mr-2">+4.2%</span>
+                    <span class="text-muted-foreground font-medium">on subscriptions</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transactions Table -->
+        <section class="glass-card rounded-[2rem] shadow-sm overflow-hidden border border-border">
+            <div class="p-8 border-b border-border flex justify-between items-center bg-card/50">
+                <div>
+                    <h2 class="text-xl font-bold tracking-tight text-foreground">Recent Transactions</h2>
+                    <p class="text-sm text-muted-foreground mt-1">A summary of your latest financial activity.</p>
+                </div>
+                <a href="#" class="btn-secondary !py-2 !px-4">View All</a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-accent/50">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+                            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-rows" class="divide-y divide-border bg-card">
+                        <!-- Shimmer Loading State -->
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-muted-foreground">
+                                <div class="flex flex-col items-center justify-center space-y-4">
+                                    <div class="w-full h-8 loading-shimmer rounded"></div>
+                                    <div class="w-full h-8 loading-shimmer rounded"></div>
+                                    <div class="w-full h-8 loading-shimmer rounded"></div>
+                                    <span>Fetching your latest activity...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        /**
+         * Configuration - Update the API_URL to match your Go backend endpoint
+         */
+        const API_URL = 'http://localhost:8000/api'; 
+
+        // Mock data for initial preview (delete this when your backend is ready)
+        const mockTransactions = Array.from({ length: 20 }, (_, i) => ({
+            id: i,
+            description: ['Grocery Shopping', 'Monthly Rent', 'Salary Deposit', 'Netflix Subscription', 'Coffee', 'Gas Station'][i % 6],
+            category: ['Food', 'Housing', 'Income', 'Entertainment', 'Lifestyle', 'Travel'][i % 6],
+            date: new Date(Date.now() - (i * 86400000)).toLocaleDateString(),
+            amount: (Math.random() * 500 * (i % 3 === 0 ? 1 : -1)).toFixed(2)
+        }));
+
+        const mockStats = {
+            totalBalance: 12450.60,
+            income: 4200.00,
+            expenses: 1850.25
+        };
+
+        /**
+         * Render Data to the DOM
+         */
+        function renderDashboard(data) {
+            // Update Stats
+            const balanceEl = document.getElementById('total-balance');
+            const incomeEl = document.getElementById('monthly-income');
+            const expenseEl = document.getElementById('monthly-expenses');
+
+            if(balanceEl) balanceEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.stats.totalBalance);
+            if(incomeEl) incomeEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.stats.income);
+            if(expenseEl) expenseEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.stats.expenses);
+
+            // Update Transactions
+            const rowsContainer = document.getElementById('transaction-rows');
+            if (!rowsContainer) return;
+            
+            rowsContainer.innerHTML = '';
+
+            data.transactions.forEach(tx => {
+                const isPositive = parseFloat(tx.amount) > 0;
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-accent/50 transition-colors group cursor-pointer';
+                row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center ${isPositive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-400'}">
+                                <i class="fas ${isPositive ? 'fa-plus' : 'fa-receipt'} text-sm"></i>
+                            </div>
+                            <span class="font-medium text-foreground">${tx.description}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 uppercase">
+                            ${tx.category}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-muted-foreground">
+                        ${tx.date}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <span class="font-bold ${isPositive ? 'text-emerald-500' : 'text-foreground'}">
+                            ${isPositive ? '+' : ''}${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(tx.amount)}
+                        </span>
+                    </td>
+                `;
+                rowsContainer.appendChild(row);
+            });
+        }
+
+        /**
+         * Fetch Data from your Golang API
+         */
+        async function fetchDashboardData() {
+            try {
+                // Simulating a delay for the shimmer effect
+                await new Promise(resolve => setTimeout(resolve, 1200));
+
+                // Using mock data for now
+                renderDashboard({
+                    stats: mockStats,
+                    transactions: mockTransactions
+                });
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                const rowsContainer = document.getElementById('transaction-rows');
+                if (rowsContainer) {
+                    rowsContainer.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-rose-500">
+                                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                                <p>Failed to connect to backend API. Please check if your Go server is running.</p>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+
+        // Logout logic
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                console.log('Logging out...');
+            });
+        }
+
+        // Initialize
+        window.onload = fetchDashboardData;
+    </script>
+</body>
+</html>
