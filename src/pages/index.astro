@@ -115,19 +115,7 @@ import TransactionModal from "../components/dashboard/TransactionModal.astro";
             }
 
             try {
-                const accountsPromise = accounts.length === 0 ? fetchAccounts() : Promise.resolve(accounts);
-                const categoriesPromise = categories.length === 0 ? fetchCategories() : Promise.resolve(categories);
-                
-                const [accData, catData, data] = await Promise.all([
-                    accountsPromise,
-                    categoriesPromise,
-                    fetchDashboard()
-                ]);
-
-                accounts = accData;
-                categories = catData;
-                populateSelects();
-
+                const data = await fetchDashboard();
                 dashboardCache = data;
                 renderDashboard(data);
             } catch (error) {
@@ -147,6 +135,28 @@ import TransactionModal from "../components/dashboard/TransactionModal.astro";
                         </tr>
                     `;
                 }
+            }
+        }
+
+        async function ensureInitialDataLoaded() {
+            if (accounts.length !== 0 && categories.length !== 0) return;
+
+            try {
+                const [accData, catData] = await Promise.all([
+                    fetchAccounts(),
+                    fetchCategories()
+                ]);
+
+                accounts = accData;
+                categories = catData;
+                populateSelects();
+            } catch (error) {
+                if (error instanceof Error && error.message === 'Unauthorized') {
+                    window.location.href = '/login';
+                    return;
+                }
+                console.error('Error fetching initial data:', error);
+                alert('Failed to load accounts and categories. Please try again.');
             }
         }
 
@@ -239,9 +249,13 @@ import TransactionModal from "../components/dashboard/TransactionModal.astro";
             });
         }
 
-        function openModal() {
+        async function openModal() {
             const { modal, form, dateInput, accLabel, accInput, catLabel, catInput } = getModalElements();
             if (!modal || !form) return;
+
+            // Show a simple loading state if needed? Or just fetch before opening.
+            // Let's ensure data is loaded before actually showing the modal to avoid blank selects.
+            await ensureInitialDataLoaded();
 
             form.reset();
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
