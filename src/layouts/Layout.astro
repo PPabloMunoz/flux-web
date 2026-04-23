@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
 
 interface Props {
 	title: string;
@@ -14,6 +15,7 @@ const { title } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinanceFlow | {title}</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <ClientRouter />
 </head>
 <body class="text-foreground bg-[#08090a]">
 
@@ -53,6 +55,9 @@ const { title } = Astro.props;
                 <a href="/accounts" class="nav-link" id="nav-accounts">
                     Accounts
                 </a>
+                <a href="/categories" class="nav-link" id="nav-categories">
+                    Categories
+                </a>
                 <a href="/stats" class="nav-link" id="nav-stats">
                     Stats
                 </a>
@@ -63,61 +68,53 @@ const { title } = Astro.props;
     <slot />
 
     <script>
-        // Handle Active Navigation Link
-        const currentPath = window.location.pathname;
-        const navLinks = {
-            '/': 'nav-dashboard',
-            '/accounts': 'nav-accounts',
-            '/stats': 'nav-stats'
-        };
-
-        const activeId = navLinks[currentPath as keyof typeof navLinks];
-        if (activeId) {
-            const activeLink = document.getElementById(activeId);
-            if (activeLink) {
-                activeLink.classList.add('nav-link-active');
-            }
-        }
-
-        // Auth check - verifies session with backend
         const API_URL = import.meta.env.PUBLIC_API_URL;
-        
-        async function checkAuth() {
-            if (currentPath === '/login' || currentPath === '/register') return;
-            
-            try {
-                const response = await fetch(`${API_URL}/me`, { 
-                    method: 'GET',
-                    credentials: 'include' 
-                });
-                
-                if (!response.ok) {
-                    window.location.href = '/login';
+
+        function updateNavigation() {
+            const currentPath = window.location.pathname;
+            const navLinks = {
+                '/': 'nav-dashboard',
+                '/accounts': 'nav-accounts',
+                '/categories': 'nav-categories',
+                '/stats': 'nav-stats'
+            };
+
+            // Remove active class from all
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-link-active');
+            });
+
+            const activeId = navLinks[currentPath as keyof typeof navLinks];
+            if (activeId) {
+                const activeLink = document.getElementById(activeId);
+                if (activeLink) {
+                    activeLink.classList.add('nav-link-active');
                 }
-            } catch (error) {
-                console.error('Auth check failed:', error);
-                window.location.href = '/login';
             }
         }
-
-        checkAuth();
-
-        // Logout logic
-        const logoutBtn = document.getElementById('logout-btn');
         
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', async () => {
-                try {
-                    await fetch(`${API_URL}/auth/logout`, { 
-                        method: 'POST',
-                        credentials: 'include' 
-                    });
-                } catch (e) {
-                    console.error('Logout error:', e);
-                }
-                window.location.href = '/login';
-            });
-        }
+        // checkAuth removed in favor of per-page API check redirect
+
+        // Initialize on page load
+        document.addEventListener('astro:page-load', () => {
+            updateNavigation();
+
+            // Logout logic
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    try {
+                        await fetch(`${API_URL}/auth/logout`, { 
+                            method: 'POST',
+                            credentials: 'include' 
+                        });
+                    } catch (e) {
+                        console.error('Logout error:', e);
+                    }
+                    window.location.href = '/login';
+                });
+            }
+        });
     </script>
 </body>
 </html>

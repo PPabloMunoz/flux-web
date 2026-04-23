@@ -158,15 +158,18 @@ import Layout from "../layouts/Layout.astro";
                         </div>
                     </td>
                     <td class="px-6 py-4">
-                        <span class="badge-pill bg-[rgba(255,255,255,0.03)]">
-                            ${tx.category_name || '-'}
+                        <span class="badge-pill bg-[rgba(255,255,255,0.03)] flex items-center w-fit gap-1.5">
+                            <div class="w-1.5 h-1.5 rounded-full" style="background-color: ${tx.category_color || '#8a8f98'}"></div>
+                            ${tx.transfer_id 
+                                ? `<i class="fas fa-right-left text-[10px] opacity-50"></i> TRANSFER` 
+                                : (tx.category_name || '-')}
                         </span>
                     </td>
                     <td class="px-6 py-4 text-[13px] text-[#62666d]">
                         ${displayDate}
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <span class="text-[14px] font-[510] ${isIncome ? 'text-[#10b981]' : 'text-[#f7f8f8]'}">
+                        <span class="text-[14px] font-[510] ${isIncome ? 'text-[#10b981]' : 'text-[#f87171]'}">
                             ${isIncome ? '+' : '-'}${format(tx.amount)}
                         </span>
                     </td>

@@ -63,21 +63,7 @@ import "../styles/global.css";
     <script>
         const API_URL = import.meta.env.PUBLIC_API_URL;
 
-        // Redirect if already logged in
-        async function checkSession() {
-            try {
-                const response = await fetch(`${API_URL}/me`, {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                if (response.ok) {
-                    window.location.href = '/';
-                }
-            } catch (error) {
-                console.error('Session check failed:', error);
-            }
-        }
-        checkSession();
+        // Session check removed to avoid /me call
 
         const loginForm = document.getElementById('login-form') as HTMLFormElement;
         
