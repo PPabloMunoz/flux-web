@@ -28,16 +28,14 @@
                     </div>
                     <div>
                         <label class="block text-[12px] font-[510] text-[#8a8f98] mb-1.5 uppercase tracking-wider">Type</label>
-                        <div class="flex gap-4 items-center h-[42px]">
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="radio" name="type" value="expense" class="hidden peer" required>
-                                <div class="w-4 h-4 rounded-full border border-[rgba(255,255,255,0.2)] peer-checked:border-[#5e6ad2] peer-checked:border-[5px] transition-all"></div>
-                                <span class="text-[14px] text-[#8a8f98] group-hover:text-[#f7f8f8] transition-colors">Expense</span>
+                        <div class="flex gap-2 p-1 bg-[rgba(255,255,255,0.03)] rounded-lg border border-[rgba(255,255,255,0.08)]">
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="type" value="expense" checked class="sr-only peer" />
+                                <div class="text-center py-1.5 rounded-md text-[13px] font-[510] text-[#8a8f98] peer-checked:bg-[rgba(248,113,113,0.1)] peer-checked:text-[#f87171] transition-all">Expense</div>
                             </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="radio" name="type" value="income" class="hidden peer">
-                                <div class="w-4 h-4 rounded-full border border-[rgba(255,255,255,0.2)] peer-checked:border-[#10b981] peer-checked:border-[5px] transition-all"></div>
-                                <span class="text-[14px] text-[#8a8f98] group-hover:text-[#f7f8f8] transition-colors">Income</span>
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="type" value="income" class="sr-only peer" />
+                                <div class="text-center py-1.5 rounded-md text-[13px] font-[510] text-[#8a8f98] peer-checked:bg-[rgba(16,185,129,0.1)] peer-checked:text-[#10b981] transition-all">Income</div>
                             </label>
                         </div>
                     </div>
