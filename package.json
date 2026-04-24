@@ -1,15 +1,14 @@
 {
   "name": "flux-web",
-  "type": "module",
   "version": "0.0.1",
-  "engines": {
-    "node": ">=22.12.0"
-  },
+  "type": "module",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "lint": "oxlint",
+    "format": "oxfmt",
     "deploy": "bunx wrangler pages deploy dist"
   },
   "dependencies": {
@@ -19,6 +18,11 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.8",
+    "oxfmt": "^0.46.0",
+    "oxlint": "^1.61.0",
     "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

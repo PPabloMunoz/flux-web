@@ -1,5 +1,5 @@
 @import url('https://rsms.me/inter/inter.css');
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @layer base {
   :root {
@@ -22,14 +22,17 @@
 
   body {
     font-family: 'Inter var', 'Inter', sans-serif;
-    font-feature-settings: "cv01", "ss03";
+    font-feature-settings: 'cv01', 'ss03';
     background-color: var(--background);
     color: var(--foreground);
     -webkit-font-smoothing: antialiased;
     letter-spacing: -0.011em;
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-weight: 510;
     color: var(--foreground);
   }
@@ -94,6 +97,10 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

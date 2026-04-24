@@ -12,7 +12,7 @@ export interface RecurrentPayment {
   next_date: string;
   is_active: boolean;
   created_at: string;
-  
+
   // Joined fields if any (following the pattern in dashboard types)
   account_name?: string;
   category_name?: string;
